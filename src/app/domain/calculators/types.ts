@@ -33,12 +33,22 @@ export type PricingAdjustment = {
   amount: Money;
 };
 
+export type PricingFee = {
+  label: string;
+  type: "fixed" | "percentage";
+  rate?: number;
+  amount: number;
+};
+
 export type PricingBreakdown = {
   baseLabor: Money;
   labor: Money;
   materials: Money;
   indirectCosts: Money;
-  fees: Money;
+  fees: {
+    total: number;
+    items: PricingFee[];
+  };
   profit: Money;
   adjustments: PricingAdjustment[];
 };
@@ -60,5 +70,4 @@ export type CalculatorConfig<
   name: string;
   description: string;
   fields: CalculatorField[];
-  pricing: PricingConfig<TInput>;
 };

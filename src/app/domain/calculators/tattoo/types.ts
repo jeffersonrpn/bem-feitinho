@@ -25,10 +25,10 @@ export type TattooInput = {
 
 export type TattooFee =
   | {
-      type: "fixed";
-      value: number;
-    }
+    type: "fixed";
+    value: number;
+  }
   | {
-      type: "percentage";
-      value: number;
-    };
+    type: "percentage";
+    value: number;
+  };

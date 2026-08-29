@@ -1,268 +1,335 @@
-import { PricingResult, PricingAdjustment } from "../types";
+import type {
+  Money,
+  PricingAdjustment,
+  PricingFee,
+  PricingResult,
+} from "../types";
+
 import {
   addMoney,
   calculateMargin,
   multiplyMoney,
+  numberOrZero,
   toCents,
 } from "../engine";
-import { TattooInput } from "./types";
-import {
-  tattooBodyParts,
-  tattooDesigns,
-  tattooStyles
-} from "./config";
 
-function getBodyPartOption(
-  bodyPart?: string,
-) {
-  return tattooBodyParts.find(
-    (item) => item.id === bodyPart,
-  );
-}
+import type {
+  TattooFee,
+  TattooInput,
+} from "./types";
 
-function getDesignOption(
-  design?: TattooInput["design"],
-) {
-  return tattooDesigns.find(
-    (item) => item.id === design,
-  );
-}
+const BODY_PART_MULTIPLIERS: Record<
+  string,
+  number
+> = {
+  arm: 1,
+  forearm: 1,
+  hand: 1.25,
+  leg: 1,
+  thigh: 1,
+  foot: 1.25,
+  back: 1.1,
+  chest: 1.1,
+  ribs: 1.25,
+  neck: 1.25,
+  face: 1.5,
+};
 
-function getStyleOption(
-  style?: TattooInput["style"],
-) {
-  return tattooStyles.find(
-    (item) => item.id === style,
-  );
-}
+const DESIGN_MULTIPLIERS: Record<
+  string,
+  number
+> = {
+  ready: 1,
+  original: 1.25,
+  adjustment: 1.1,
+};
 
-function getBodyPartMultiplier(
-  bodyPart?: string,
-): number {
-  const option = tattooBodyParts.find(
-    (item) => item.id === bodyPart,
-  );
+const STYLE_MULTIPLIERS: Record<
+  string,
+  number
+> = {
+  black: 1,
+  "black-shading": 1.15,
+  color: 1.25,
+  "black-color": 1.3,
+};
 
-  if (!option) {
-    return 1;
+function createAdjustment(
+  id: string,
+  label: string,
+  multiplier: number,
+  base: Money,
+): PricingAdjustment | undefined {
+  if (multiplier === 1) {
+    return undefined;
   }
 
-  return 1 + (option.complexity - 1) * 0.1;
+  return {
+    id,
+    label,
+    multiplier,
+    amount: multiplyMoney(
+      base,
+      multiplier - 1,
+    ),
+  };
 }
 
-function getDesignMultiplier(
-  design?: TattooInput["design"],
-): number {
-  const option = tattooDesigns.find(
-    (item) => item.id === design,
+function calculateLabor(
+  input: TattooInput,
+): {
+  baseLabor: Money;
+  labor: Money;
+  adjustments: PricingAdjustment[];
+} {
+  const hourlyRate = toCents(
+    numberOrZero(input.hourlyRate),
   );
 
-  return option?.multiplier ?? 1;
-}
-
-function getStyleMultiplier(
-  style?: TattooInput["style"],
-): number {
-  const option = tattooStyles.find(
-    (item) => item.id === style,
+  const sessions = numberOrZero(
+    input.sessions,
   );
 
-  return option?.multiplier ?? 1;
+  const hoursPerSession =
+    numberOrZero(
+      input.hoursPerSession,
+    );
+
+  const totalHours =
+    sessions * hoursPerSession;
+
+  const baseLabor = Math.round(
+    hourlyRate * totalHours,
+  );
+
+  const adjustments: PricingAdjustment[] =
+    [];
+
+  const bodyPartMultiplier =
+    input.bodyPart
+      ? BODY_PART_MULTIPLIERS[
+      input.bodyPart
+      ] ?? 1
+      : 1;
+
+  const bodyPartAdjustment =
+    createAdjustment(
+      "body-part",
+      "Complexidade da parte do corpo",
+      bodyPartMultiplier,
+      baseLabor,
+    );
+
+  if (bodyPartAdjustment) {
+    adjustments.push(
+      bodyPartAdjustment,
+    );
+  }
+
+  const bodyPartLabor =
+    multiplyMoney(
+      baseLabor,
+      bodyPartMultiplier,
+    );
+
+  const designMultiplier =
+    input.design
+      ? DESIGN_MULTIPLIERS[
+      input.design
+      ] ?? 1
+      : 1;
+
+  const designAdjustment =
+    createAdjustment(
+      "design",
+      "Tipo de desenho",
+      designMultiplier,
+      bodyPartLabor,
+    );
+
+  if (designAdjustment) {
+    adjustments.push(
+      designAdjustment,
+    );
+  }
+
+  const designLabor =
+    multiplyMoney(
+      bodyPartLabor,
+      designMultiplier,
+    );
+
+  const styleMultiplier =
+    input.style
+      ? STYLE_MULTIPLIERS[
+      input.style
+      ] ?? 1
+      : 1;
+
+  const styleAdjustment =
+    createAdjustment(
+      "style",
+      "Cores e acabamento",
+      styleMultiplier,
+      designLabor,
+    );
+
+  if (styleAdjustment) {
+    adjustments.push(
+      styleAdjustment,
+    );
+  }
+
+  const labor =
+    multiplyMoney(
+      designLabor,
+      styleMultiplier,
+    );
+
+  return {
+    baseLabor,
+    labor,
+    adjustments,
+  };
 }
 
 function calculateFees(
-  base: number,
-  fees: TattooInput["fees"],
-): number {
+  fees: TattooFee[] | undefined,
+  base: Money,
+): {
+  total: Money;
+  items: PricingFee[];
+} {
   if (!fees?.length) {
-    return 0;
+    return {
+      total: 0,
+      items: [],
+    };
   }
 
-  return fees.reduce((total, fee) => {
-    if (fee.type === "fixed") {
-      return total + toCents(fee.value);
-    }
+  const items: PricingFee[] =
+    fees.map((fee, index) => {
+      if (fee.type === "fixed") {
+        return {
+          label: `Taxa fixa ${index + 1}`,
+          type: "fixed",
+          amount: toCents(
+            numberOrZero(fee.value),
+          ),
+        };
+      }
 
-    return total + Math.round(base * (fee.value / 100));
-  }, 0);
+      const rate =
+        numberOrZero(fee.value);
+
+      const amount = Math.round(
+        base * (rate / 100),
+      );
+
+      return {
+        label: `Taxa percentual ${index + 1}`,
+        type: "percentage",
+        rate,
+        amount,
+      };
+    });
+
+  const total = items.reduce(
+    (sum, fee) =>
+      addMoney(sum, fee.amount),
+    0,
+  );
+
+  return {
+    total,
+    items,
+  };
 }
 
 export function calculateTattooPrice(
   input: TattooInput,
 ): PricingResult {
-  const materials = toCents(input.materials ?? 0);
-
-  const sessions = input.sessions ?? 0;
-  const hoursPerSession = input.hoursPerSession ?? 0;
-  const hourlyRate = toCents(input.hourlyRate ?? 0);
-
-  const totalHours = sessions * hoursPerSession;
-
-  const baseLabor = multiplyMoney(
-    hourlyRate,
-    totalHours,
-  );
-
-  const adjustments: PricingAdjustment[] = [];
-
-  /*
-  * Body part
-  */
-  const bodyPart = getBodyPartOption(
-    input.bodyPart,
-  );
-
-  if (bodyPart && bodyPart.complexity > 1) {
-    const multiplier =
-      1 + (bodyPart.complexity - 1) * 0.1;
-
-    const amount =
-      multiplyMoney(baseLabor, multiplier) -
-      baseLabor;
-
-    adjustments.push({
-      id: "body-complexity",
-      label: `Complexidade: ${bodyPart.label}`,
-      multiplier,
-      amount,
-    });
-  }
-
-  /*
-   * Design
-   */
-  const design = getDesignOption(
-    input.design,
-  );
-
-  if (
-    design &&
-    design.multiplier !== undefined &&
-    design.multiplier !== 1
-  ) {
-    const amount =
-      multiplyMoney(
-        baseLabor,
-        design.multiplier,
-      ) - baseLabor;
-
-    adjustments.push({
-      id: "design",
-      label: design.label,
-      multiplier: design.multiplier,
-      amount,
-    });
-  }
-
-  /*
-   * Style
-   */
-  const style = getStyleOption(
-    input.style,
-  );
-
-  if (
-    style &&
-    style.multiplier !== undefined &&
-    style.multiplier !== 1
-  ) {
-    const amount =
-      multiplyMoney(
-        baseLabor,
-        style.multiplier,
-      ) - baseLabor;
-
-    adjustments.push({
-      id: "style",
-      label: style.label,
-      multiplier: style.multiplier,
-      amount,
-    });
-  }
-
-  /*
-   * Current MVP behavior:
-   *
-   * All multipliers are calculated independently
-   * against the base labor.
-   *
-   * The combined adjustment is applied to the
-   * base labor below.
-   */
-  const combinedMultiplier =
-    adjustments.reduce(
-      (multiplier, adjustment) =>
-        multiplier * adjustment.multiplier,
-      1,
-    );
-
-  const labor = multiplyMoney(
+  const {
     baseLabor,
-    combinedMultiplier,
+    labor,
+    adjustments,
+  } = calculateLabor(input);
+
+  const materials = toCents(
+    numberOrZero(input.materials),
   );
-
-  /*
-   * The detailed adjustment amounts need to
-   * represent their cumulative effect.
-   *
-   * Recalculate them sequentially so the
-   * breakdown adds up to the final labor value.
-   */
-  let adjustmentBase = baseLabor;
-
-  for (const adjustment of adjustments) {
-    const adjustedValue =
-      multiplyMoney(
-        adjustmentBase,
-        adjustment.multiplier,
-      );
-
-    adjustment.amount =
-      adjustedValue - adjustmentBase;
-
-    adjustmentBase = adjustedValue;
-  }
 
   const indirectCosts = toCents(
-    input.indirectCosts ?? 0,
+    numberOrZero(
+      input.indirectCosts,
+    ),
   );
 
-  const subtotal = addMoney(
+  /*
+   * Fees are calculated after labor,
+   * materials and indirect costs.
+   *
+   * Percentage fees therefore apply to
+   * the operational cost of the tattoo.
+   */
+  const operationalCost = addMoney(
     labor,
     materials,
     indirectCosts,
   );
 
   const fees = calculateFees(
-    subtotal,
     input.fees,
+    operationalCost,
   );
 
-  const costBeforeProfit = addMoney(
-    subtotal,
-    fees,
+  const subtotal = addMoney(
+    operationalCost,
+    fees.total,
   );
 
-  const margin =
-    (input.profitMargin ?? 0) / 100;
+  /*
+   * TattooInput stores the profit margin
+   * as a percentage:
+   *
+   * 30 => 30%
+   *
+   * calculateMargin expects a fraction:
+   *
+   * 0.30 => 30%
+   */
+  const profitMargin = numberOrZero(input.profitMargin);
 
-  const total = calculateMargin(
-    costBeforeProfit,
-    margin,
-  );
+  const margin = profitMargin / 100;
 
-  const profit =
-    total - costBeforeProfit;
+  /*
+   * calculateMargin returns the final price
+   * required to preserve the requested margin.
+   *
+   * Example:
+   *
+   * cost = R$ 100
+   * margin = 30%
+   *
+   * price = 100 / (1 - 0.30)
+   *       = R$ 142.86
+   */
+  const total = calculateMargin(subtotal, margin);
+
+  const profit = Math.max(0, total - subtotal);
 
   return {
     total,
-    subtotal: costBeforeProfit,
+    subtotal,
     breakdown: {
       baseLabor,
       labor,
       materials,
       indirectCosts,
-      fees,
+      fees: {
+        total: fees.total,
+        items: fees.items,
+      },
       profit,
       adjustments,
     },

@@ -1,47 +1,9 @@
-import type {
-    PricingResult,
-} from "../types";
+export { tattooCalculator } from "./config";
+export { calculateTattooPrice } from "./calculator";
 
-import {
-    addMoney,
-    calculateMargin,
-    multiplyMoney,
-    toCents,
-} from "../engine";
-
-import {
-    tattooBodyParts,
-    tattooDesigns,
-    tattooStyles,
-} from "./config";
-
-import type {
-    TattooInput,
+export type {
+  TattooInput,
+  TattooFee,
+  TattooDesign,
+  TattooStyle,
 } from "./types";
-
-import type {
-    CalculatorConfig,
-} from "../types";
-
-import {
-    calculateTattooPrice,
-} from "./calculator";
-
-import {
-    tattooFields,
-} from "./config";
-
-export const tattooCalculator: CalculatorConfig<TattooInput> = {
-    id: "tattoo",
-
-    name: "Tatuagem",
-
-    description:
-        "Calcule um preço sugerido para seu trabalho de tatuagem.",
-
-    fields: tattooFields,
-
-    pricing: {
-        calculate: calculateTattooPrice,
-    },
-};

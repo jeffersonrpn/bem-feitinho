@@ -42,13 +42,14 @@ describe("Tattoo Calculator", () => {
       materials: 100,
       fees: [
         {
+          label: "Fixa",
           type: "fixed",
           value: 10,
         },
       ],
     });
 
-    expect(result.breakdown.fees).toBe(1000);
+    expect(result.breakdown.fees.total).toBe(1000);
     expect(result.total).toBe(11000);
   });
 
@@ -57,13 +58,14 @@ describe("Tattoo Calculator", () => {
       materials: 100,
       fees: [
         {
+          label: "Percentual",
           type: "percentage",
           value: 10,
         },
       ],
     });
 
-    expect(result.breakdown.fees).toBe(1000);
+    expect(result.breakdown.fees.total).toBe(1000);
   });
 
   it("returns detailed pricing adjustments", () => {
@@ -81,26 +83,28 @@ describe("Tattoo Calculator", () => {
     expect(
       result.breakdown.adjustments[0],
     ).toMatchObject({
-      id: "body-complexity",
-      label: "Complexidade: Costela",
-      multiplier: 1.2,
-      amount: 6000,
+      id: "body-part",
+      label: "Complexidade da parte do corpo",
+      multiplier: 1.25,
+      amount: 7500,
     });
 
     expect(
       result.breakdown.adjustments[1],
     ).toMatchObject({
       id: "design",
-      label: "Desenho original",
-      multiplier: 1.35,
+      label: "Tipo de desenho",
+      multiplier: 1.25,
+      amount: 9375,
     });
 
     expect(
       result.breakdown.adjustments[2],
     ).toMatchObject({
       id: "style",
-      label: "Preto & sombreado",
-      multiplier: 1.1,
+      label: "Cores e acabamento",
+      multiplier: 1.15,
+      amount: 7031,
     });
   });
 

@@ -37,8 +37,7 @@ export default function Home() {
               color="text.secondary"
               sx={{ mt: 1 }}
             >
-              Uma calculadora para valorizar
-              o que você faz com as mãos.
+              Valorize o preço do seu feito à mão
             </Typography>
           </Box>
 

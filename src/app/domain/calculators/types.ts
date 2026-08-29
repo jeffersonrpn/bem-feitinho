@@ -34,6 +34,7 @@ export type PricingAdjustment = {
 };
 
 export type PricingBreakdown = {
+  baseLabor: Money;
   labor: Money;
   materials: Money;
   indirectCosts: Money;

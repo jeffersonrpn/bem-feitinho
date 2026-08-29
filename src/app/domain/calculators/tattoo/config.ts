@@ -163,6 +163,14 @@ export const tattooFields = [
   },
 
   {
+    id: "hourlyRate",
+    label: "Valor da sua hora",
+    type: "currency" as const,
+    min: 0,
+    step: 0.01,
+  },
+
+  {
     id: "sessions",
     label: "Número de sessões",
     type: "number" as const,

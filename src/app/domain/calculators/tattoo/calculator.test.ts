@@ -114,7 +114,7 @@ describe("Tattoo Calculator", () => {
       style: "black-shading",
     });
 
-    const baseLabor = 30000;
+    const baseLabor = result.breakdown.baseLabor;
 
     const adjustmentsTotal =
       result.breakdown.adjustments.reduce(

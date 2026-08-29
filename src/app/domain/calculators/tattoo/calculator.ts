@@ -258,6 +258,7 @@ export function calculateTattooPrice(
     total,
     subtotal: costBeforeProfit,
     breakdown: {
+      baseLabor,
       labor,
       materials,
       indirectCosts,

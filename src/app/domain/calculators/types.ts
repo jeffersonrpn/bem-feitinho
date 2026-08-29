@@ -1,0 +1,55 @@
+export type Money = number;
+
+export type CalculatorFieldOption<T extends string = string> = {
+  id: T;
+  label: string;
+  multiplier?: number;
+  value?: number;
+};
+
+export type CalculatorFieldType =
+  | "number"
+  | "currency"
+  | "select"
+  | "percentage";
+
+export type CalculatorField = {
+  id: string;
+  label: string;
+  type: CalculatorFieldType;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: CalculatorFieldOption[];
+};
+
+export type PricingInput = Record<string, unknown>;
+
+export type PricingResult = {
+  total: Money;
+  breakdown: PricingBreakdown;
+};
+
+export type PricingBreakdown = {
+  labor: Money;
+  materials: Money;
+  indirectCosts: Money;
+  fees: Money;
+  profit: Money;
+  adjustments: Money;
+};
+
+export type PricingConfig<TInput extends PricingInput = PricingInput> = {
+  calculate: (input: TInput) => PricingResult;
+};
+
+export type CalculatorConfig<
+  TInput extends PricingInput = PricingInput,
+> = {
+  id: string;
+  name: string;
+  description: string;
+  fields: CalculatorField[];
+  pricing: PricingConfig<TInput>;
+};

@@ -26,9 +26,11 @@ export type CalculatorField = {
 
 export type PricingInput = Record<string, unknown>;
 
-export type PricingResult = {
-  total: Money;
-  breakdown: PricingBreakdown;
+export type PricingAdjustment = {
+  id: string;
+  label: string;
+  multiplier: number;
+  amount: Money;
 };
 
 export type PricingBreakdown = {
@@ -37,7 +39,13 @@ export type PricingBreakdown = {
   indirectCosts: Money;
   fees: Money;
   profit: Money;
-  adjustments: Money;
+  adjustments: PricingAdjustment[];
+};
+
+export type PricingResult = {
+  total: Money;
+  subtotal: Money;
+  breakdown: PricingBreakdown;
 };
 
 export type PricingConfig<TInput extends PricingInput = PricingInput> = {

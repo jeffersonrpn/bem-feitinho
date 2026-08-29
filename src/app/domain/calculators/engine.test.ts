@@ -13,7 +13,63 @@ import {
   it,
 } from "vitest";
 
-describe("calculator engine", () => {
+import { calculateTattooPrice } from "./tattoo/calculator";
+
+describe("Calculator engine", () => {
+  describe("Tattoo Calculator", () => {
+    it("calculates a complete tattoo pricing scenario", () => {
+      const input = {
+        sizeCm: 12,
+        bodyPart: "ribs" as const,
+        design: "original" as const,
+        style: "black-shading" as const,
+        materials: 60,
+        sessions: 2,
+        hoursPerSession: 3,
+        hourlyRate: 50,
+        indirectCosts: 40,
+        fees: [],
+        profitMargin: 0,
+      };
+
+      const result = calculateTattooPrice(input);
+
+      expect(result).toEqual({
+        total: 63460,
+        subtotal: 63460,
+
+        breakdown: {
+          labor: 53460,
+          materials: 6000,
+          indirectCosts: 4000,
+          fees: 0,
+          profit: 0,
+
+          adjustments: [
+            {
+              id: "body-complexity",
+              label: "Complexidade: Costela",
+              multiplier: 1.2,
+              amount: 6000,
+            },
+            {
+              id: "design",
+              label: "Desenho original",
+              multiplier: 1.35,
+              amount: 12600,
+            },
+            {
+              id: "style",
+              label: "Preto & sombreado",
+              multiplier: 1.1,
+              amount: 4860,
+            },
+          ],
+        },
+      });
+    });
+  });
+
   describe("currency helpers", () => {
     it("converts amounts to and from cents with rounding", () => {
       expect(toCents(12.345)).toBe(1235);

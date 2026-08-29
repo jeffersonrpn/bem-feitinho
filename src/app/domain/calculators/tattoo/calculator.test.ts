@@ -65,4 +65,68 @@ describe("Tattoo Calculator", () => {
 
     expect(result.breakdown.fees).toBe(1000);
   });
+
+  it("returns detailed pricing adjustments", () => {
+    const result = calculateTattooPrice({
+      sessions: 2,
+      hoursPerSession: 3,
+      hourlyRate: 50,
+      bodyPart: "ribs",
+      design: "original",
+      style: "black-shading",
+    });
+
+    expect(result.breakdown.adjustments).toHaveLength(3);
+
+    expect(
+      result.breakdown.adjustments[0],
+    ).toMatchObject({
+      id: "body-complexity",
+      label: "Complexidade: Costela",
+      multiplier: 1.2,
+      amount: 6000,
+    });
+
+    expect(
+      result.breakdown.adjustments[1],
+    ).toMatchObject({
+      id: "design",
+      label: "Desenho original",
+      multiplier: 1.35,
+    });
+
+    expect(
+      result.breakdown.adjustments[2],
+    ).toMatchObject({
+      id: "style",
+      label: "Preto & sombreado",
+      multiplier: 1.1,
+    });
+  });
+
+  it("breakdown adjustments match the final labor", () => {
+    const result = calculateTattooPrice({
+      sessions: 2,
+      hoursPerSession: 3,
+      hourlyRate: 50,
+      bodyPart: "ribs",
+      design: "original",
+      style: "black-shading",
+    });
+
+    const baseLabor = 30000;
+
+    const adjustmentsTotal =
+      result.breakdown.adjustments.reduce(
+        (total, adjustment) =>
+          total + adjustment.amount,
+        0,
+      );
+
+    expect(
+      baseLabor + adjustmentsTotal,
+    ).toBe(
+      result.breakdown.labor,
+    );
+  });
 });

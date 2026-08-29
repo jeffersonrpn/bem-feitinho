@@ -1,69 +1,88 @@
 import Image from "next/image";
 import styles from "./page.module.css";
 
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+    <Box
+      component="main"
+      sx={{
+        minHeight: "100vh",
+        py: 4,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Stack spacing={3}>
+          <Box>
+            <Typography
+              variant="brand"
+              color="primary.dark"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+              bem-feitinho ✨
+            </Typography>
+
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ mt: 1 }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              Uma calculadora para valorizar
+              o que você faz com as mãos.
+            </Typography>
+          </Box>
+
+          <Card>
+            <CardContent>
+              <Stack spacing={2.5}>
+                <Box>
+                  <Typography variant="h5">
+                    Calculadora de tatuagem
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    Vamos descobrir um preço
+                    justo para o seu trabalho.
+                  </Typography>
+                </Box>
+
+                <TextField
+                  label="Tamanho"
+                  placeholder="Ex.: 12"
+                  slotProps={{
+                    htmlInput: {
+                      min: 0,
+                      step: 0.5,
+                    },
+                  }}
+                  helperText="Tamanho estimado em centímetros"
+                />
+
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                >
+                  Calcular preço
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Stack>
+      </Container>
+    </Box>
   );
 }

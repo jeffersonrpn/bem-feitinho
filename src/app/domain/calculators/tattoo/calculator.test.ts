@@ -42,7 +42,6 @@ describe("Tattoo Calculator", () => {
       materials: 100,
       fees: [
         {
-          label: "Fixa",
           type: "fixed",
           value: 10,
         },
@@ -58,7 +57,6 @@ describe("Tattoo Calculator", () => {
       materials: 100,
       fees: [
         {
-          label: "Percentual",
           type: "percentage",
           value: 10,
         },

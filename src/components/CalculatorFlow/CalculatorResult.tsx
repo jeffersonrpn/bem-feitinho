@@ -129,7 +129,7 @@ export function CalculatorResult({
 
             <ResultRow
               label="Taxas"
-              value={breakdown.fees}
+              value={breakdown.fees.total}
             />
 
             <Divider />

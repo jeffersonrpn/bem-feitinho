@@ -118,37 +118,35 @@ export function DynamicField<
                 step: field.step,
                 inputMode: "decimal",
               },
+              input: {
+                ...(isCurrency
+                  ? {
+                      startAdornment: (
+                        <span
+                          style={{
+                            marginRight: 8,
+                          }}
+                        >
+                          R$
+                        </span>
+                      ),
+                    }
+                  : {}),
+                ...(isPercentage
+                  ? {
+                      endAdornment: (
+                        <span
+                          style={{
+                            marginLeft: 8,
+                          }}
+                        >
+                          %
+                        </span>
+                      ),
+                    }
+                  : {}),
+              },
             }}
-            InputProps={
-              isCurrency
-                ? {
-                    startAdornment: (
-                      <span
-                        style={{
-                          marginRight: 8,
-                        }}
-                      >
-                        R$
-                      </span>
-                    ),
-                  }
-                : undefined
-            }
-            {...(isPercentage
-              ? {
-                  InputProps: {
-                    endAdornment: (
-                      <span
-                        style={{
-                          marginLeft: 8,
-                        }}
-                      >
-                        %
-                      </span>
-                    ),
-                  },
-                }
-              : {})}
           />
         );
       }}

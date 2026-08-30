@@ -155,15 +155,6 @@ export function CalculatorResult({
           </Stack>
         </CardContent>
       </Card>
-
-      <Button
-        variant="contained"
-        size="large"
-        fullWidth
-        onClick={onRestart}
-      >
-        Fazer outro cálculo
-      </Button>
     </Stack>
   );
 }

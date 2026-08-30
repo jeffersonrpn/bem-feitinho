@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  forwardRef,
+  useImperativeHandle,
+} from "react";
+
+import {
   Button,
   Stack,
   Typography,
@@ -35,23 +40,35 @@ type CalculatorFormProps = {
   onBack: () => void;
 };
 
-export function CalculatorForm({
-  calculator,
-  onSubmit,
-  onBack,
-}: CalculatorFormProps) {
-  const schema =
-    createCalculatorSchema(
-      calculator.fields,
-    );
+type CalculatorFormHandle = {
+  submit: () => void;
+};
 
-  const {
-    control,
-    handleSubmit,
-  } = useForm({
-    resolver: zodResolver(schema),
-    mode: "onBlur",
-  });
+export const CalculatorForm = forwardRef<
+  CalculatorFormHandle,
+  CalculatorFormProps
+>(
+  function CalculatorFormComponent({
+    calculator,
+    onSubmit,
+    onBack,
+  }, ref) {
+    const schema =
+      createCalculatorSchema(
+        calculator.fields,
+      );
+
+    const {
+      control,
+      handleSubmit,
+    } = useForm({
+      resolver: zodResolver(schema),
+      mode: "onBlur",
+    });
+
+    useImperativeHandle(ref, () => ({
+      submit: () => handleSubmit(onSubmit)(),
+    }));
 
   return (
     <Stack
@@ -85,26 +102,7 @@ export function CalculatorForm({
           ),
         )}
       </Stack>
-
-      <Stack spacing={1.5}>
-        <Button
-          type="submit"
-          variant="contained"
-          size="large"
-          fullWidth
-        >
-          Calcular preço
-        </Button>
-
-        <Button
-          type="button"
-          variant="text"
-          onClick={onBack}
-          fullWidth
-        >
-          Voltar
-        </Button>
-      </Stack>
     </Stack>
   );
-}
+  },
+);

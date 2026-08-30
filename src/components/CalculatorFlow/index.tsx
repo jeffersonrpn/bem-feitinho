@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
+  BottomNavigation,
+  BottomNavigationAction,
   Box,
-  Button,
   Container,
   MobileStepper,
-  Step,
-  StepLabel,
-  Stepper,
+  Paper,
 } from "@mui/material";
+import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
+import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
+
 import type {
   CalculatorConfig,
   PricingResult,
@@ -46,6 +48,8 @@ export function CalculatorFlow({
     useState<
       PricingResult | undefined
     >();
+
+  const formRef = useRef<{ submit: () => void }>(null);
 
   function handleCalculatorSelect(
     calculator: CalculatorConfig,
@@ -91,49 +95,72 @@ export function CalculatorFlow({
 
   return (
     <Container>
-        <MobileStepper
-          variant="dots"
-          steps={3}
-          position="static"
-          activeStep={activeStep}
-          sx={{ justifyContent: "center" }}
-          slotProps={{
-            progress: {
-              'aria-label': 'stepper dotted progress',
-            },
-          }}
-          nextButton={<></>}
-          backButton={<></>}
-        />
-      {activeStep === 0 && (
-        <CalculatorSelector
-          calculators={calculators}
-          onSelect={
-            handleCalculatorSelect
-          }
-        />
-      )}
-
-      {activeStep === 1 &&
-        selectedCalculator && (
-          <CalculatorForm
-            calculator={
-              selectedCalculator
+      <MobileStepper
+        variant="dots"
+        steps={3}
+        position="static"
+        activeStep={activeStep}
+        sx={{ justifyContent: "center" }}
+        slotProps={{
+          progress: {
+            'aria-label': 'stepper dotted progress',
+          },
+        }}
+        nextButton={<></>}
+        backButton={<></>}
+      />
+      <Box sx={{ minHeight: '78vh', marginBottom: '6rem' }}>
+        {activeStep === 0 && (
+          <CalculatorSelector
+            calculators={calculators}
+            onSelect={
+              handleCalculatorSelect
             }
-            onSubmit={
-              handleFormSubmit
-            }
-            onBack={handleBack}
           />
         )}
 
-      {activeStep === 2 && result && (
-        <CalculatorResult
-          result={result}
-          onRestart={
-            handleRestart
-          }
-        />
+        {activeStep === 1 &&
+          selectedCalculator && (
+            <CalculatorForm
+              ref={formRef}
+              calculator={
+                selectedCalculator
+              }
+              onSubmit={
+                handleFormSubmit
+              }
+              onBack={handleBack}
+            />
+          )}
+
+        {activeStep === 2 && result && (
+          <CalculatorResult
+            result={result}
+            onRestart={
+              handleRestart
+            }
+          />
+        )}
+      </Box>
+      {activeStep > 0 && (
+        <Paper sx={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          zIndex: 1000,
+          borderRadius: `2rem`,
+          margin: 2
+        }} elevation={3}>
+          {activeStep === 1 && (
+            <BottomNavigation showLabels={false} sx={{ borderRadius: `2rem` }}>
+              <BottomNavigationAction label="Voltar" icon={<UndoRoundedIcon />} onClick={handleBack} />
+              <BottomNavigationAction label="Calcular" icon={<TaskAltRoundedIcon />} onClick={() => formRef.current?.submit()} />
+            </BottomNavigation>
+          )}
+          {activeStep === 2 && (
+            <BottomNavigation showLabels={false} sx={{ borderRadius: `2rem` }}>
+              <BottomNavigationAction label="Voltar" icon={<UndoRoundedIcon />} onClick={handleRestart} />
+            </BottomNavigation>
+          )}
+        </Paper>
       )}
     </Container>
   );

@@ -167,10 +167,8 @@ export const tattooCalculator: CalculatorConfig = {
     {
       id: "fees",
       label: "Taxas",
-      type: "currency",
+      type: "fee-list",
       required: false,
-      min: 0,
-      step: 0.01,
     },
 
     {

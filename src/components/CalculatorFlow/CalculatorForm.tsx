@@ -30,7 +30,7 @@ import type {
 
 import {
   DynamicField,
-} from "./DynamicField";
+} from "../DynamicField/DynamicField";
 
 type CalculatorFormProps = {
   calculator: CalculatorConfig;

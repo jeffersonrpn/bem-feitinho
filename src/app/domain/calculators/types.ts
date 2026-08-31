@@ -11,7 +11,8 @@ export type CalculatorFieldType =
   | "number"
   | "currency"
   | "select"
-  | "percentage";
+  | "percentage"
+  | "fee-list";
 
 export type CalculatorField = {
   id: string;

@@ -96,6 +96,30 @@ function createSelectSchema(
     : schema.optional();
 }
 
+function createFeeListSchema(
+  field: CalculatorField,
+) {
+  const feeSchema = z.discriminatedUnion(
+    "type",
+    [
+      z.object({
+        type: z.literal("fixed"),
+        value: z.number().finite(),
+      }),
+      z.object({
+        type: z.literal("percentage"),
+        value: z.number().finite(),
+      }),
+    ],
+  );
+
+  const schema = z.array(feeSchema);
+
+  return field.required
+    ? schema.min(1, `${field.label} deve ter ao menos uma taxa.`)
+    : schema.optional();
+}
+
 function createFieldSchema(
   field: CalculatorField,
 ) {
@@ -111,6 +135,9 @@ function createFieldSchema(
 
     case "select":
       return createSelectSchema(field);
+
+    case "fee-list":
+      return createFeeListSchema(field);
 
     default:
       return z.unknown().optional();

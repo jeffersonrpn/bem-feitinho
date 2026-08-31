@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  MenuItem,
-  TextField,
-} from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 
 import {
   Controller,
@@ -12,20 +9,16 @@ import {
   type Path,
 } from "react-hook-form";
 
-import type {
-  CalculatorField,
-} from "@/domain/calculators/types";
+import type { CalculatorField } from "@/domain/calculators/types";
+import type { TattooFee } from "@/app/domain/calculators/tattoo/types";
+import { FeeField } from "./FeeField";
 
-type DynamicFieldProps<
-  T extends FieldValues,
-> = {
+type DynamicFieldProps<T extends FieldValues> = {
   field: CalculatorField;
   control: Control<T>;
 };
 
-export function DynamicField<
-  T extends FieldValues,
->({
+export function DynamicField<T extends FieldValues>({
   field,
   control,
 }: DynamicFieldProps<T>) {
@@ -33,80 +26,58 @@ export function DynamicField<
     <Controller
       name={field.id as Path<T>}
       control={control}
-      render={({
-        field: controllerField,
-        fieldState,
-      }) => {
-        if (
-          field.type === "select"
-        ) {
+      render={({ field: controllerField, fieldState }) => {
+        if (field.type === "fee-list") {
+          return (
+            <FeeField
+              label={field.label}
+              value={(controllerField.value as TattooFee[] | undefined) ?? []}
+              onChange={controllerField.onChange}
+              onBlur={controllerField.onBlur}
+              error={fieldState.error?.message}
+            />
+          );
+        }
+
+        if (field.type === "select") {
           return (
             <TextField
               select
               label={field.label}
-              value={
-                controllerField.value ?? ""
-              }
-              onChange={
-                controllerField.onChange
-              }
-              onBlur={
-                controllerField.onBlur
-              }
-              error={
-                !!fieldState.error
-              }
-              helperText={
-                fieldState.error?.message
-              }
+              value={controllerField.value ?? ""}
+              onChange={controllerField.onChange}
+              onBlur={controllerField.onBlur}
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message}
               required={field.required}
             >
-              {field.options?.map(
-                (option) => (
-                  <MenuItem
-                    key={option.id}
-                    value={option.id}
-                  >
-                    {option.label}
-                  </MenuItem>
-                ),
-              )}
+              {field.options?.map((option) => (
+                <MenuItem key={option.id} value={option.id}>
+                  {option.label}
+                </MenuItem>
+              ))}
             </TextField>
           );
         }
 
-        const isCurrency =
-          field.type === "currency";
-
-        const isPercentage =
-          field.type === "percentage";
+        const isCurrency = field.type === "currency";
+        const isPercentage = field.type === "percentage";
 
         return (
           <TextField
             label={field.label}
             type="number"
-            value={
-              controllerField.value ?? ""
-            }
+            value={controllerField.value ?? ""}
             onChange={(event) => {
-              const value =
-                event.target.value;
+              const value = event.target.value;
 
               controllerField.onChange(
-                value === ""
-                  ? undefined
-                  : Number(value),
+                value === "" ? undefined : Number(value),
               );
             }}
-            onBlur={
-              controllerField.onBlur
-            }
-            error={
-              !!fieldState.error
-            }
-            helperText={
-              fieldState.error?.message
-            }
+            onBlur={controllerField.onBlur}
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
             required={field.required}
             slotProps={{
               inputLabel: {
@@ -153,3 +124,4 @@ export function DynamicField<
     />
   );
 }
+

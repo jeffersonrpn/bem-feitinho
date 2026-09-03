@@ -48,6 +48,8 @@ export function CalculatorFlow({
     useState<
       PricingResult | undefined
     >();
+  const [adjustedTotal, setAdjustedTotal] =
+    useState<number | undefined>();
 
   const formRef = useRef<{ submit: () => void }>(null);
 
@@ -74,6 +76,7 @@ export function CalculatorFlow({
     );
 
     setResult(calculated);
+    setAdjustedTotal(undefined);
     setActiveStep(2);
   }
 
@@ -83,6 +86,7 @@ export function CalculatorFlow({
     );
 
     setResult(undefined);
+    setAdjustedTotal(undefined);
     setActiveStep(0);
   }
 
@@ -138,6 +142,10 @@ export function CalculatorFlow({
             result={result}
             onRestart={
               handleRestart
+            }
+            adjustedTotal={adjustedTotal}
+            onAdjustedTotalChange={
+              setAdjustedTotal
             }
           />
         )}

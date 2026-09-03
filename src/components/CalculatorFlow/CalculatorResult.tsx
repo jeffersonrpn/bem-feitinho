@@ -32,13 +32,17 @@ function formatMoney(
 type CalculatorResultProps = {
   result: PricingResult;
   onRestart: () => void;
+  adjustedTotal?: number;
+  onAdjustedTotalChange?: (value: number) => void;
 };
 
 export function CalculatorResult({
   result,
   onRestart,
+  adjustedTotal,
+  onAdjustedTotalChange,
 }: CalculatorResultProps) {
-  const [editedTotal, setEditedTotal] = useState(
+  const [localEditedTotal, setLocalEditedTotal] = useState(
     result.total / 100,
   );
 
@@ -46,6 +50,7 @@ export function CalculatorResult({
     breakdown,
   } = result;
 
+  const editedTotal = adjustedTotal ?? localEditedTotal;
   const displayedTotal = Number.isFinite(editedTotal)
     ? Math.round(editedTotal * 100)
     : result.total;
@@ -79,7 +84,9 @@ export function CalculatorResult({
           type="number"
           value={editedTotal}
           onChange={(event) => {
-            setEditedTotal(Number(event.target.value));
+            const value = Number(event.target.value);
+            setLocalEditedTotal(value);
+            onAdjustedTotalChange?.(value);
           }}
           slotProps={{
             htmlInput: { min: 0, step: 0.01 },

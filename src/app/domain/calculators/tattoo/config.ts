@@ -18,6 +18,16 @@ export const tattooCalculator: CalculatorConfig = {
     },
 
     {
+      id: "complexity",
+      label: "Complexidade do trabalho (1 a 10)",
+      type: "number",
+      required: true,
+      min: 1,
+      max: 10,
+      step: 1,
+    },
+
+    {
       id: "bodyPart",
       label: "Parte do corpo",
       type: "select",
@@ -122,15 +132,6 @@ export const tattooCalculator: CalculatorConfig = {
     {
       id: "materials",
       label: "Custo com materiais",
-      type: "currency",
-      required: false,
-      min: 0,
-      step: 0.01,
-    },
-
-    {
-      id: "hourlyRate",
-      label: "Valor da sua hora",
       type: "currency",
       required: false,
       min: 0,

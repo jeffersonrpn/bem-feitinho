@@ -27,6 +27,16 @@ export function multiplyMoney(
   return Math.round(value * multiplier);
 }
 
+export function calculateEffortMultiplier(
+  complexity: number,
+): number {
+  if (!Number.isFinite(complexity) || complexity < 1 || complexity > 10) {
+    throw new Error("Complexity must be between 1 and 10.");
+  }
+
+  return 1 + (complexity - 1) * 0.1;
+}
+
 export function calculateMargin(
   cost: Money,
   margin: number,

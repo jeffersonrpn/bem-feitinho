@@ -54,5 +54,7 @@ export async function calculatePrice(
     );
   }
 
-  return engine(values);
+  return engine(
+    parsed.data as Parameters<typeof engine>[0],
+  );
 }

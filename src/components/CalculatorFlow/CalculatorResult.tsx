@@ -7,8 +7,11 @@ import {
   CardContent,
   Divider,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
+
+import { useState } from "react";
 
 import type {
   PricingResult,
@@ -35,9 +38,17 @@ export function CalculatorResult({
   result,
   onRestart,
 }: CalculatorResultProps) {
+  const [editedTotal, setEditedTotal] = useState(
+    result.total / 100,
+  );
+
   const {
     breakdown,
   } = result;
+
+  const displayedTotal = Number.isFinite(editedTotal)
+    ? Math.round(editedTotal * 100)
+    : result.total;
 
   return (
     <Stack spacing={3}>
@@ -60,8 +71,23 @@ export function CalculatorResult({
             mt: 1,
           }}
         >
-          {formatMoney(result.total)}
+          {formatMoney(displayedTotal)}
         </Typography>
+
+        <TextField
+          label="Ajustar preço sugerido"
+          type="number"
+          value={editedTotal}
+          onChange={(event) => {
+            setEditedTotal(Number(event.target.value));
+          }}
+          slotProps={{
+            htmlInput: { min: 0, step: 0.01 },
+          }}
+          helperText="O valor inicial considera a complexidade informada."
+          fullWidth
+          sx={{ mt: 2 }}
+        />
       </Box>
 
       <Card>
@@ -75,6 +101,10 @@ export function CalculatorResult({
               label="Mão de obra base"
               value={breakdown.baseLabor}
             />
+
+            <Typography variant="body2" color="text.secondary">
+              Complexidade: {breakdown.complexityScore}/10 · esforço: {breakdown.effortMultiplier.toFixed(1)}x
+            </Typography>
 
             {breakdown.adjustments.length >
               0 && (
@@ -149,7 +179,7 @@ export function CalculatorResult({
 
             <ResultRow
               label="Preço sugerido"
-              value={result.total}
+              value={displayedTotal}
               emphasized
             />
           </Stack>

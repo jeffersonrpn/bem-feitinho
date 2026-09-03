@@ -44,6 +44,9 @@ export type PricingFee = {
 export type PricingBreakdown = {
   baseLabor: Money;
   labor: Money;
+  complexityScore: number;
+  effortMultiplier: number;
+  referenceHourlyRate: Money;
   materials: Money;
   indirectCosts: Money;
   fees: {
@@ -57,6 +60,7 @@ export type PricingBreakdown = {
 export type PricingResult = {
   total: Money;
   subtotal: Money;
+  suggestedTotal: Money;
   breakdown: PricingBreakdown;
 };
 

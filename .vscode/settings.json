@@ -1,0 +1,6 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "yarn vitest": true,
+        "yarn tsc": true
+    }
+}

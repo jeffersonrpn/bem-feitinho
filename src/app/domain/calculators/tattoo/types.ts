@@ -11,13 +11,13 @@ export type TattooStyle =
 
 export type TattooInput = {
   sizeCm?: number;
+  complexity: number;
   bodyPart?: string;
   design?: TattooDesign;
   style?: TattooStyle;
   materials?: number;
   sessions?: number;
   hoursPerSession?: number;
-  hourlyRate?: number;
   indirectCosts?: number;
   fees?: TattooFee[];
   profitMargin?: number;

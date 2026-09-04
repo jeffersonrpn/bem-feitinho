@@ -27,7 +27,7 @@ describe("Calculator engine", () => {
         materials: 60,
         sessions: 2,
         hoursPerSession: 3,
-        hourlyRate: 50,
+        complexity: 1,
         indirectCosts: 40,
         fees: [
           {
@@ -43,9 +43,13 @@ describe("Calculator engine", () => {
       expect(result).toEqual({
         total: 67101,
         subtotal: 67101,
+        suggestedTotal: 67101,
         breakdown: {
           baseLabor: 30000,
           labor: 53906,
+          complexityScore: 1,
+          effortMultiplier: 1,
+          referenceHourlyRate: 5000,
           materials: 6000,
           indirectCosts: 4000,
           fees: {

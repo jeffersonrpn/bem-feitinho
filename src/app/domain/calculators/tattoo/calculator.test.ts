@@ -13,7 +13,7 @@ describe("Tattoo Calculator", () => {
     const result = calculateTattooPrice({
       sessions: 2,
       hoursPerSession: 3,
-      hourlyRate: 50,
+      complexity: 1,
     });
 
     expect(result.breakdown.labor).toBe(30000);
@@ -21,6 +21,7 @@ describe("Tattoo Calculator", () => {
 
   it("accepts optional fields", () => {
     const result = calculateTattooPrice({
+      complexity: 1,
       materials: 50,
     });
 
@@ -30,6 +31,7 @@ describe("Tattoo Calculator", () => {
 
   it("calculates profit margin correctly", () => {
     const result = calculateTattooPrice({
+      complexity: 1,
       materials: 100,
       profitMargin: 30,
     });
@@ -39,6 +41,7 @@ describe("Tattoo Calculator", () => {
 
   it("calculates fixed fees", () => {
     const result = calculateTattooPrice({
+      complexity: 1,
       materials: 100,
       fees: [
         {
@@ -54,6 +57,7 @@ describe("Tattoo Calculator", () => {
 
   it("calculates percentage fees", () => {
     const result = calculateTattooPrice({
+      complexity: 1,
       materials: 100,
       fees: [
         {
@@ -70,7 +74,7 @@ describe("Tattoo Calculator", () => {
     const result = calculateTattooPrice({
       sessions: 2,
       hoursPerSession: 3,
-      hourlyRate: 50,
+      complexity: 1,
       bodyPart: "ribs",
       design: "original",
       style: "black-shading",
@@ -110,7 +114,7 @@ describe("Tattoo Calculator", () => {
     const result = calculateTattooPrice({
       sessions: 2,
       hoursPerSession: 3,
-      hourlyRate: 50,
+      complexity: 1,
       bodyPart: "ribs",
       design: "original",
       style: "black-shading",
@@ -130,5 +134,35 @@ describe("Tattoo Calculator", () => {
     ).toBe(
       result.breakdown.labor,
     );
+  });
+
+  it("uses a 1.0 effort multiplier at complexity 1", () => {
+    const result = calculateTattooPrice({
+      complexity: 1,
+      sessions: 1,
+      hoursPerSession: 1,
+    });
+
+    expect(result.breakdown.effortMultiplier).toBe(1);
+    expect(result.breakdown.baseLabor).toBe(5000);
+  });
+
+  it("uses a 1.9 effort multiplier at complexity 10", () => {
+    const result = calculateTattooPrice({
+      complexity: 10,
+      sessions: 1,
+      hoursPerSession: 1,
+    });
+
+    expect(result.breakdown.effortMultiplier).toBe(1.9);
+    expect(result.breakdown.baseLabor).toBe(9500);
+  });
+
+  it("rejects complexity outside the supported range", () => {
+    expect(() =>
+      calculateTattooPrice({
+        complexity: 11,
+      }),
+    ).toThrow("Complexity must be between 1 and 10.");
   });
 });

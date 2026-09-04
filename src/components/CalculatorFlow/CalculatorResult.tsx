@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   Box,
   Button,
@@ -7,8 +9,12 @@ import {
   CardContent,
   Divider,
   Stack,
+  TextField,
   Typography,
+  Alert,
 } from "@mui/material";
+
+import { useState } from "react";
 
 import type {
   PricingResult,
@@ -28,16 +34,32 @@ function formatMoney(
 
 type CalculatorResultProps = {
   result: PricingResult;
-  onRestart: () => void;
+  adjustedTotal?: number;
+  onAdjustedTotalChange?: (value: number) => void;
+  onSave: () => void | Promise<void>;
+  saveStatus?: "saving" | "saved";
+  saveError?: string;
 };
 
 export function CalculatorResult({
   result,
-  onRestart,
+  adjustedTotal,
+  onAdjustedTotalChange,
+  onSave,
+  saveStatus,
+  saveError,
 }: CalculatorResultProps) {
+  const [localEditedTotal, setLocalEditedTotal] = useState(
+    result.total / 100,
+  );
   const {
     breakdown,
   } = result;
+
+  const editedTotal = adjustedTotal ?? localEditedTotal;
+  const displayedTotal = Number.isFinite(editedTotal)
+    ? Math.round(editedTotal * 100)
+    : result.total;
 
   return (
     <Stack spacing={3}>
@@ -60,8 +82,54 @@ export function CalculatorResult({
             mt: 1,
           }}
         >
-          {formatMoney(result.total)}
+          {formatMoney(displayedTotal)}
         </Typography>
+
+        <TextField
+          label="Ajustar preço sugerido"
+          type="number"
+          value={editedTotal}
+          onChange={(event) => {
+            const value = Number(event.target.value);
+            setLocalEditedTotal(value);
+            onAdjustedTotalChange?.(value);
+          }}
+          slotProps={{
+            htmlInput: { min: 0, step: 0.01 },
+          }}
+          helperText="O valor inicial considera a complexidade informada."
+          fullWidth
+          sx={{ mt: 2 }}
+        />
+
+        <Button
+          variant="contained"
+          onClick={onSave}
+          disabled={saveStatus === "saving" || saveStatus === "saved"}
+          sx={{ mt: 2 }}
+        >
+          {saveStatus === "saving"
+            ? "Salvando..."
+            : saveStatus === "saved"
+              ? "Cálculo salvo"
+              : "Salvar este cálculo"}
+        </Button>
+
+        {saveStatus === "saved" && (
+          <Button
+            component={Link}
+            href="/history"
+            sx={{ mt: 2, ml: 1 }}
+          >
+            Ver histórico
+          </Button>
+        )}
+
+        {saveError && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            {saveError}
+          </Alert>
+        )}
       </Box>
 
       <Card>
@@ -75,6 +143,10 @@ export function CalculatorResult({
               label="Mão de obra base"
               value={breakdown.baseLabor}
             />
+
+            <Typography variant="body2" color="text.secondary">
+              Complexidade: {breakdown.complexityScore}/10 · esforço: {breakdown.effortMultiplier.toFixed(1)}x
+            </Typography>
 
             {breakdown.adjustments.length >
               0 && (
@@ -149,7 +221,7 @@ export function CalculatorResult({
 
             <ResultRow
               label="Preço sugerido"
-              value={result.total}
+              value={displayedTotal}
               emphasized
             />
           </Stack>

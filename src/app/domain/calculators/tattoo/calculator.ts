@@ -8,10 +8,13 @@ import type {
 import {
   addMoney,
   calculateMargin,
+  calculateEffortMultiplier,
   multiplyMoney,
   numberOrZero,
   toCents,
 } from "../engine";
+
+const REFERENCE_HOURLY_RATE = 50;
 
 import type {
   TattooFee,
@@ -81,9 +84,16 @@ function calculateLabor(
   baseLabor: Money;
   labor: Money;
   adjustments: PricingAdjustment[];
+  complexityScore: number;
+  effortMultiplier: number;
+  referenceHourlyRate: Money;
 } {
-  const hourlyRate = toCents(
-    numberOrZero(input.hourlyRate),
+  const complexityScore = input.complexity;
+  const effortMultiplier = calculateEffortMultiplier(
+    complexityScore,
+  );
+  const referenceHourlyRate = toCents(
+    REFERENCE_HOURLY_RATE,
   );
 
   const sessions = numberOrZero(
@@ -98,8 +108,9 @@ function calculateLabor(
   const totalHours =
     sessions * hoursPerSession;
 
-  const baseLabor = Math.round(
-    hourlyRate * totalHours,
+  const baseLabor = multiplyMoney(
+    referenceHourlyRate * totalHours,
+    effortMultiplier,
   );
 
   const adjustments: PricingAdjustment[] =
@@ -190,6 +201,9 @@ function calculateLabor(
     baseLabor,
     labor,
     adjustments,
+    complexityScore,
+    effortMultiplier,
+    referenceHourlyRate,
   };
 }
 
@@ -253,6 +267,9 @@ export function calculateTattooPrice(
     baseLabor,
     labor,
     adjustments,
+    complexityScore,
+    effortMultiplier,
+    referenceHourlyRate,
   } = calculateLabor(input);
 
   const materials = toCents(
@@ -321,9 +338,13 @@ export function calculateTattooPrice(
   return {
     total,
     subtotal,
+    suggestedTotal: total,
     breakdown: {
       baseLabor,
       labor,
+      complexityScore,
+      effortMultiplier,
+      referenceHourlyRate,
       materials,
       indirectCosts,
       fees: {

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   Box,
   Button,
@@ -13,8 +15,6 @@ import {
 } from "@mui/material";
 
 import { useState } from "react";
-
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import type {
   PricingResult,
@@ -34,22 +34,24 @@ function formatMoney(
 
 type CalculatorResultProps = {
   result: PricingResult;
-  onRestart: () => void;
   adjustedTotal?: number;
   onAdjustedTotalChange?: (value: number) => void;
+  onSave: () => void | Promise<void>;
+  saveStatus?: "saving" | "saved";
+  saveError?: string;
 };
 
 export function CalculatorResult({
   result,
-  onRestart,
   adjustedTotal,
   onAdjustedTotalChange,
+  onSave,
+  saveStatus,
+  saveError,
 }: CalculatorResultProps) {
   const [localEditedTotal, setLocalEditedTotal] = useState(
     result.total / 100,
   );
-  const [authError, setAuthError] = useState<string>();
-
   const {
     breakdown,
   } = result;
@@ -58,34 +60,6 @@ export function CalculatorResult({
   const displayedTotal = Number.isFinite(editedTotal)
     ? Math.round(editedTotal * 100)
     : result.total;
-
-  async function handleSaveRequest() {
-    setAuthError(undefined);
-
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const callbackUrl = new URL(
-        "/auth/callback",
-        window.location.origin,
-      );
-      callbackUrl.searchParams.set("next", "/");
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: callbackUrl.toString(),
-        },
-      });
-
-      if (error) {
-        setAuthError("Não foi possível iniciar o login.");
-      }
-    } catch {
-      setAuthError(
-        "Configure a conexão com o Supabase para salvar seus cálculos.",
-      );
-    }
-  }
 
   return (
     <Stack spacing={3}>
@@ -130,15 +104,30 @@ export function CalculatorResult({
 
         <Button
           variant="contained"
-          onClick={handleSaveRequest}
+          onClick={onSave}
+          disabled={saveStatus === "saving" || saveStatus === "saved"}
           sx={{ mt: 2 }}
         >
-          Salvar este cálculo
+          {saveStatus === "saving"
+            ? "Salvando..."
+            : saveStatus === "saved"
+              ? "Cálculo salvo"
+              : "Salvar este cálculo"}
         </Button>
 
-        {authError && (
+        {saveStatus === "saved" && (
+          <Button
+            component={Link}
+            href="/history"
+            sx={{ mt: 2, ml: 1 }}
+          >
+            Ver histórico
+          </Button>
+        )}
+
+        {saveError && (
           <Alert severity="warning" sx={{ mt: 2 }}>
-            {authError}
+            {saveError}
           </Alert>
         )}
       </Box>

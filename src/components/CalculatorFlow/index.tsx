@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -18,7 +18,14 @@ import type {
 } from "@/domain/calculators/types";
 import {
   calculatePrice,
+  saveCalculation,
 } from "@/app/actions/calculator";
+
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  PENDING_CALCULATION_KEY,
+  type PendingCalculation,
+} from "@/lib/pending-calculation";
 
 import {
   CalculatorForm,
@@ -50,8 +57,65 @@ export function CalculatorFlow({
     >();
   const [adjustedTotal, setAdjustedTotal] =
     useState<number | undefined>();
+  const [formValues, setFormValues] =
+    useState<Record<string, unknown>>();
+  const [saveStatus, setSaveStatus] =
+    useState<"saving" | "saved">();
+  const [saveError, setSaveError] =
+    useState<string>();
 
   const formRef = useRef<{ submit: () => void }>(null);
+
+  useEffect(() => {
+    const pendingValue = sessionStorage.getItem(
+      PENDING_CALCULATION_KEY,
+    );
+
+    if (!pendingValue) {
+      return;
+    }
+
+    async function restoreAndSave() {
+      try {
+        const pending = JSON.parse(
+          pendingValue!,
+        ) as PendingCalculation;
+        const calculator = calculators.find(
+          (item) => item.id === pending.calculatorId,
+        );
+
+        if (!calculator) {
+          throw new Error("Calculadora não encontrada.");
+        }
+
+        setSaveStatus("saving");
+        const calculated = await calculatePrice(
+          pending.calculatorId,
+          pending.values,
+        );
+
+        setSelectedCalculator(calculator);
+        setFormValues(pending.values);
+        setResult(calculated);
+        setAdjustedTotal(pending.adjustedTotal);
+        setActiveStep(2);
+
+        await saveCalculation(
+          pending.calculatorId,
+          pending.values,
+          pending.adjustedTotal,
+        );
+
+        sessionStorage.removeItem(PENDING_CALCULATION_KEY);
+        setSaveStatus("saved");
+      } catch {
+        setSaveStatus(undefined);
+        setSaveError("Não foi possível concluir o salvamento.");
+      }
+    }
+
+    void restoreAndSave();
+  }, [calculators]);
 
   function handleCalculatorSelect(
     calculator: CalculatorConfig,
@@ -76,7 +140,10 @@ export function CalculatorFlow({
     );
 
     setResult(calculated);
+    setFormValues(values);
     setAdjustedTotal(undefined);
+    setSaveStatus(undefined);
+    setSaveError(undefined);
     setActiveStep(2);
   }
 
@@ -86,7 +153,10 @@ export function CalculatorFlow({
     );
 
     setResult(undefined);
+    setFormValues(undefined);
     setAdjustedTotal(undefined);
+    setSaveStatus(undefined);
+    setSaveError(undefined);
     setActiveStep(0);
   }
 
@@ -95,6 +165,60 @@ export function CalculatorFlow({
       (current) =>
         Math.max(0, current - 1),
     );
+  }
+
+  async function handleSave() {
+    if (!selectedCalculator || !result || !formValues) {
+      return;
+    }
+
+    setSaveError(undefined);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const finalTotal = adjustedTotal ?? result.total / 100;
+
+      if (!user) {
+        const pending: PendingCalculation = {
+          calculatorId: selectedCalculator.id,
+          values: formValues,
+          adjustedTotal: finalTotal,
+        };
+
+        sessionStorage.setItem(
+          PENDING_CALCULATION_KEY,
+          JSON.stringify(pending),
+        );
+
+        const callbackUrl = new URL(
+          "/auth/callback",
+          window.location.origin,
+        );
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: callbackUrl.toString() },
+        });
+
+        if (error) {
+          throw error;
+        }
+        return;
+      }
+
+      setSaveStatus("saving");
+      await saveCalculation(
+        selectedCalculator.id,
+        formValues,
+        finalTotal,
+      );
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus(undefined);
+      setSaveError("Não foi possível salvar este cálculo.");
+    }
   }
 
   return (
@@ -140,13 +264,13 @@ export function CalculatorFlow({
         {activeStep === 2 && result && (
           <CalculatorResult
             result={result}
-            onRestart={
-              handleRestart
-            }
             adjustedTotal={adjustedTotal}
             onAdjustedTotalChange={
               setAdjustedTotal
             }
+            onSave={handleSave}
+            saveStatus={saveStatus}
+            saveError={saveError}
           />
         )}
       </Box>
@@ -173,3 +297,4 @@ export function CalculatorFlow({
     </Container>
   );
 }
+

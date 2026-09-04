@@ -5,16 +5,34 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
+
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Supabase Authentication
+
+The calculator can be used anonymously. To enable saving estimates, create a
+Supabase project, enable Google in **Authentication > Providers**, and add the
+following redirect URLs in **Authentication > URL Configuration**:
+
+- `http://localhost:3000/auth/callback`
+- `https://bem-feitinho.vercel.app/auth/callback`
+
+Configure the Google OAuth client in Supabase rather than in this repository.
+The OAuth client secret must never be committed or exposed in browser code. If
+a secret has been shared publicly, revoke it and create a replacement first.
+
+Copy `.env.example` to `.env.local` and fill in the Supabase project values:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASPUBLISHABLEON_KEY=your-anon-key
+```
+
+Set the same variables in the Vercel project environment settings for Preview
+and Production deployments.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

@@ -9,9 +9,12 @@ import {
   Stack,
   TextField,
   Typography,
+  Alert,
 } from "@mui/material";
 
 import { useState } from "react";
+
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import type {
   PricingResult,
@@ -45,6 +48,7 @@ export function CalculatorResult({
   const [localEditedTotal, setLocalEditedTotal] = useState(
     result.total / 100,
   );
+  const [authError, setAuthError] = useState<string>();
 
   const {
     breakdown,
@@ -54,6 +58,34 @@ export function CalculatorResult({
   const displayedTotal = Number.isFinite(editedTotal)
     ? Math.round(editedTotal * 100)
     : result.total;
+
+  async function handleSaveRequest() {
+    setAuthError(undefined);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const callbackUrl = new URL(
+        "/auth/callback",
+        window.location.origin,
+      );
+      callbackUrl.searchParams.set("next", "/");
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: callbackUrl.toString(),
+        },
+      });
+
+      if (error) {
+        setAuthError("Não foi possível iniciar o login.");
+      }
+    } catch {
+      setAuthError(
+        "Configure a conexão com o Supabase para salvar seus cálculos.",
+      );
+    }
+  }
 
   return (
     <Stack spacing={3}>
@@ -95,6 +127,20 @@ export function CalculatorResult({
           fullWidth
           sx={{ mt: 2 }}
         />
+
+        <Button
+          variant="contained"
+          onClick={handleSaveRequest}
+          sx={{ mt: 2 }}
+        >
+          Salvar este cálculo
+        </Button>
+
+        {authError && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            {authError}
+          </Alert>
+        )}
       </Box>
 
       <Card>

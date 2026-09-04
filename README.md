@@ -35,7 +35,7 @@ Copy `.env.example` to `.env.local` and fill in the Supabase project values:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
 Set the same variables in the Vercel project environment settings for Preview

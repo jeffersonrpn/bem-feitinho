@@ -33,7 +33,7 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log(user);
+  
   const metadata = user?.user_metadata as Record<string, unknown> | undefined;
   const displayName =
     typeof metadata?.name === "string"

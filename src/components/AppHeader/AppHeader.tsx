@@ -46,7 +46,7 @@ export function AppHeader({
   }
 
   return (
-    <AppBar position="static" color="transparent" elevation={0}>
+    <AppBar position="static" elevation={0}>
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <Typography variant="brand" component="span">
           b

@@ -68,9 +68,7 @@ export type PricingConfig<TInput extends PricingInput = PricingInput> = {
   calculate: (input: TInput) => PricingResult;
 };
 
-export type CalculatorConfig<
-  TInput extends PricingInput = PricingInput,
-> = {
+export type CalculatorConfig = {
   id: string;
   name: string;
   description: string;

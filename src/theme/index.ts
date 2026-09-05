@@ -3,9 +3,7 @@ import { createTheme } from "@mui/material/styles";
 import { palette } from "./palette";
 import { typography } from "./typography";
 
-export const createAppTheme = (
-  bonbonFontFamily: string,
-) =>
+export const createAppTheme = () =>
   createTheme({
     palette,
     typography: typography(

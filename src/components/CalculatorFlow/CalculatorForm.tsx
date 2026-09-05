@@ -6,7 +6,6 @@ import {
 } from "react";
 
 import {
-  Button,
   Stack,
   Typography,
 } from "@mui/material";
@@ -51,7 +50,6 @@ export const CalculatorForm = forwardRef<
   function CalculatorFormComponent({
     calculator,
     onSubmit,
-    onBack,
   }, ref) {
     const schema =
       createCalculatorSchema(

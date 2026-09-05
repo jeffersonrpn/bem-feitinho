@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR"
       className={`${bonbon.variable} ${nunito.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <AppRouterCacheProvider>
           <AppThemeProvider
             bonbonFontFamily="var(--font-bonbon)"

@@ -75,6 +75,10 @@ export function CalculatorFlow({
       return;
     }
 
+    sessionStorage.removeItem(
+      PENDING_CALCULATION_KEY,
+    );
+
     async function restoreAndSave() {
       try {
         const pending = JSON.parse(
@@ -106,7 +110,6 @@ export function CalculatorFlow({
           pending.adjustedTotal,
         );
 
-        sessionStorage.removeItem(PENDING_CALCULATION_KEY);
         setSaveStatus("saved");
       } catch {
         setSaveStatus(undefined);

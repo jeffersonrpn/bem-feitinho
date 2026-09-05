@@ -4,17 +4,13 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 
 import { createAppTheme } from "@/theme";
 
-type ThemeProviderProps = {
-  children: React.ReactNode;
-  bonbonFontFamily: string;
-};
-
 export function AppThemeProvider({
   children,
-  bonbonFontFamily,
-}: ThemeProviderProps) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <ThemeProvider theme={createAppTheme(bonbonFontFamily)}>
+    <ThemeProvider theme={createAppTheme()}>
       <CssBaseline />
       {children}
     </ThemeProvider>

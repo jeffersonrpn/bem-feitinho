@@ -127,6 +127,27 @@ function calculateLabor(
   const adjustments: PricingAdjustment[] =
     [];
 
+  const totalTimeMultiplier = getOptionalLinearMultiplier(
+    "totalTime",
+    input.totalTime,
+  );
+
+  const totalTimeAdjustment = createAdjustment(
+    "total-time",
+    "Tempo total",
+    totalTimeMultiplier,
+    baseLabor,
+  );
+
+  if (totalTimeAdjustment) {
+    adjustments.push(totalTimeAdjustment);
+  }
+
+  const totalTimeLabor = multiplyMoney(
+    baseLabor,
+    totalTimeMultiplier,
+  );
+
   const sizeMultiplier = getOptionalLinearMultiplier(
     "sizeCm",
     input.sizeCm,
@@ -136,7 +157,7 @@ function calculateLabor(
     "size",
     "Tamanho",
     sizeMultiplier,
-    baseLabor,
+    totalTimeLabor,
   );
 
   if (sizeAdjustment) {
@@ -144,7 +165,7 @@ function calculateLabor(
   }
 
   const sizeLabor = multiplyMoney(
-    baseLabor,
+    totalTimeLabor,
     sizeMultiplier,
   );
 

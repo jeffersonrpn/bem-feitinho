@@ -9,15 +9,21 @@ import {
 } from "./calculator";
 
 describe("Crochet Calculator", () => {
-  it("calculates labor from total time and complexity", () => {
+  it("increases the labor multiplier by 0.1 for each hour", () => {
     const result = calculateCrochetPrice({
       complexity: 3,
       totalTime: 2,
     });
 
     expect(result.breakdown.baseLabor).toBe(12000);
-    expect(result.breakdown.labor).toBe(12000);
-    expect(result.total).toBe(12000);
+    expect(result.breakdown.labor).toBe(14400);
+    expect(result.breakdown.adjustments).toContainEqual({
+      id: "total-time",
+      label: "Tempo total",
+      multiplier: 1.2,
+      amount: 2400,
+    });
+    expect(result.total).toBe(14400);
   });
 
   it("applies size, design, and style multipliers in sequence", () => {
@@ -29,25 +35,31 @@ describe("Crochet Calculator", () => {
       style: "fantasy",
     });
 
-    expect(result.breakdown.labor).toBe(25875);
+    expect(result.breakdown.labor).toBe(31050);
     expect(result.breakdown.adjustments).toEqual([
+      {
+        id: "total-time",
+        label: "Tempo total",
+        multiplier: 1.2,
+        amount: 2000,
+      },
       {
         id: "size",
         label: "Tamanho",
         multiplier: 1.5,
-        amount: 5000,
+        amount: 6000,
       },
       {
         id: "design",
         label: "Tipo de desenho",
         multiplier: 1.5,
-        amount: 7500,
+        amount: 9000,
       },
       {
         id: "style",
         label: "Cores e acabamento",
         multiplier: 1.15,
-        amount: 3375,
+        amount: 4050,
       },
     ]);
   });
@@ -98,12 +110,11 @@ describe("Crochet Calculator", () => {
   it("uses neutral multipliers when optional criteria are absent", () => {
     const result = calculateCrochetPrice({
       complexity: 1,
-      totalTime: 1,
     });
 
     expect(result.breakdown.adjustments).toEqual([]);
     expect(result.breakdown.effortMultiplier).toBe(1);
-    expect(result.total).toBe(5000);
+    expect(result.total).toBe(0);
   });
 
   it("rejects complexity outside the configured range", () => {

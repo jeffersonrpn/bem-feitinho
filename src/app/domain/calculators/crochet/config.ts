@@ -102,7 +102,13 @@ export const crochetCalculator: CalculatorConfig = {
       type: "number",
       required: false,
       min: 0,
-      step: 0.5,
+      step: 1,
+      multiplier: {
+        type: "linear",
+        base: 0,
+        step: 0.01,
+        referenceValue: 0,
+      },
     },
 
     {

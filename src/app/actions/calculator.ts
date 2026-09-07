@@ -58,9 +58,11 @@ export async function calculatePrice(
     );
   }
 
-  return engine(
-    parsed.data as Parameters<typeof engine>[0],
-  );
+  return (
+    engine as unknown as (
+      input: Record<string, unknown>,
+    ) => ReturnType<typeof engine>
+  )(parsed.data);
 }
 
 export async function saveCalculation(

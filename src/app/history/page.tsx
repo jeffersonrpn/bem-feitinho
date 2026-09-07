@@ -87,7 +87,9 @@ export default async function HistoryPage() {
                 <Typography color="text.secondary">
                   {calculation.calculator_id === "tattoo"
                     ? "Tatuagem"
-                    : calculation.calculator_id}
+                    : calculation.calculator_id === "crochet"
+                      ? "Crochê"
+                      : calculation.calculator_id}
                 </Typography>
                 <Typography color="text.secondary">
                   {new Intl.DateTimeFormat("pt-BR", {

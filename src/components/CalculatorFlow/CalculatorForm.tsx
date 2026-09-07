@@ -32,11 +32,8 @@ import type {
   PricingResult,
 } from "@/domain/calculators/types";
 import {
-  calculateTattooPrice,
-} from "@/domain/calculators/tattoo";
-import type {
-  TattooInput,
-} from "@/domain/calculators/tattoo/types";
+  calculatorEngines,
+} from "@/domain/calculators/engines";
 
 import {
   DynamicField,
@@ -72,11 +69,18 @@ const StyledSnackbar = styled(Snackbar)(({ theme }) => ({
   },
 }));
 
-function getTattooResult(
+function getCalculatorResult(
+  calculatorId: string,
   values: FieldValues,
 ): PricingResult | undefined {
   try {
-    return calculateTattooPrice(values as TattooInput);
+    const engine = calculatorEngines[
+      calculatorId as keyof typeof calculatorEngines
+    ] as unknown as (
+      input: Record<string, unknown>,
+    ) => PricingResult;
+
+    return engine(values);
   } catch {
     return undefined;
   }
@@ -144,9 +148,7 @@ export const CalculatorForm = forwardRef<
     const values = useWatch({ control });
 
     const preview =
-      calculator.id === "tattoo"
-        ? getTattooResult(values)
-        : undefined;
+      getCalculatorResult(calculator.id, values);
 
     useImperativeHandle(ref, () => ({
       submit: () => handleSubmit(onSubmit)(),

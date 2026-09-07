@@ -8,14 +8,15 @@ import {
   MenuItem,
   TextField,
   Button,
+  Typography,
 } from "@mui/material";
 import { FeeItem } from "./FeeItem";
-import type { TattooFee } from "@/app/domain/calculators/tattoo/types";
+import type { Fee } from "@/app/domain/calculators/types";
 
 type FeeFieldProps = {
   label: string;
-  value: TattooFee[];
-  onChange: (value: TattooFee[]) => void;
+  value: Fee[];
+  onChange: (value: Fee[]) => void;
   onBlur: () => void;
   error?: string;
   influenceText?: string;
@@ -59,6 +60,9 @@ export function FeeField({
   return (
     <Stack spacing={2}>
       <InputLabel>{label}</InputLabel>
+      <Typography variant="body2" color="textSecondary">
+        Taxas da maquininha, bancos, etc
+      </Typography>
 
       <FormControl fullWidth>
         <InputLabel>Tipo de taxa</InputLabel>

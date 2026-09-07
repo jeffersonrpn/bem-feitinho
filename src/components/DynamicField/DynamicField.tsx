@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 
 import type { CalculatorField } from "@/domain/calculators/types";
-import type { TattooFee } from "@/app/domain/calculators/tattoo/types";
+import type { Fee } from "@/app/domain/calculators/types";
 import { FeeField } from "./FeeField";
 
 type DynamicFieldProps<T extends FieldValues> = {
@@ -35,7 +35,7 @@ export function DynamicField<T extends FieldValues>({
               return (
                 <FeeField
                   label={field.label}
-                  value={(controllerField.value as TattooFee[] | undefined) ?? []}
+                  value={(controllerField.value as Fee[] | undefined) ?? []}
                   onChange={controllerField.onChange}
                   onBlur={controllerField.onBlur}
                   error={fieldState.error?.message}
@@ -54,7 +54,7 @@ export function DynamicField<T extends FieldValues>({
                   onChange={controllerField.onChange}
                   onBlur={controllerField.onBlur}
                   error={!!fieldState.error}
-                  helperText={fieldState.error?.message ?? influenceText}
+                  helperText={fieldState.error?.message}
                   required={field.required}
                 >
                   {field.options?.map((option) => (

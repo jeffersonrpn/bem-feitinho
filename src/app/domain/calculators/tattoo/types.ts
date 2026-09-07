@@ -1,3 +1,5 @@
+import { Fee } from "../types";
+
 export type TattooDesign =
   | "ready"
   | "adaptation"
@@ -19,16 +21,6 @@ export type TattooInput = {
   sessions?: number;
   hoursPerSession?: number;
   indirectCosts?: number;
-  fees?: TattooFee[];
+  fees?: Fee[];
   profitMargin?: number;
 };
-
-export type TattooFee =
-  | {
-    type: "fixed";
-    value: number;
-  }
-  | {
-    type: "percentage";
-    value: number;
-  };

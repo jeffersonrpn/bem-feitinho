@@ -17,12 +17,12 @@ import {
 const REFERENCE_HOURLY_RATE = 50;
 
 import type {
-  TattooInput,
+  CrochetInput,
 } from "./types";
-import { tattooCalculator } from "./config";
+import { crochetCalculator } from "./config";
 
 function getField(fieldId: string) {
-  const field = tattooCalculator.fields.find(
+  const field = crochetCalculator.fields.find(
     (item) => item.id === fieldId,
   );
 
@@ -100,7 +100,7 @@ function createAdjustment(
 }
 
 function calculateLabor(
-  input: TattooInput,
+  input: CrochetInput,
 ): {
   baseLabor: Money;
   labor: Money;
@@ -118,20 +118,9 @@ function calculateLabor(
     REFERENCE_HOURLY_RATE,
   );
 
-  const sessions = numberOrZero(
-    input.sessions,
-  );
-
-  const hoursPerSession =
-    numberOrZero(
-      input.hoursPerSession,
-    );
-
-  const totalHours =
-    sessions * hoursPerSession;
-
+  const totalTime = numberOrZero(input.totalTime);
   const baseLabor = multiplyMoney(
-    referenceHourlyRate * totalHours,
+    referenceHourlyRate * totalTime,
     effortMultiplier,
   );
 
@@ -159,30 +148,6 @@ function calculateLabor(
     sizeMultiplier,
   );
 
-  const bodyPartMultiplier = getOptionMultiplier(
-    "bodyPart",
-    input.bodyPart,
-  );
-
-  const bodyPartAdjustment =
-    createAdjustment(
-      "body-part",
-      "Complexidade da parte do corpo",
-      bodyPartMultiplier,
-      sizeLabor,
-    );
-
-  if (bodyPartAdjustment) {
-    adjustments.push(
-      bodyPartAdjustment,
-    );
-  }
-
-  const bodyPartLabor =
-    multiplyMoney(
-      sizeLabor,
-      bodyPartMultiplier,
-    );
 
   const designMultiplier = getOptionMultiplier(
     "design",
@@ -194,7 +159,7 @@ function calculateLabor(
       "design",
       "Tipo de desenho",
       designMultiplier,
-      bodyPartLabor,
+      sizeLabor,
     );
 
   if (designAdjustment) {
@@ -205,7 +170,7 @@ function calculateLabor(
 
   const designLabor =
     multiplyMoney(
-      bodyPartLabor,
+      sizeLabor,
       designMultiplier,
     );
 
@@ -297,8 +262,8 @@ function calculateFees(
   };
 }
 
-export function calculateTattooPrice(
-  input: TattooInput,
+export function calculateCrochetPrice(
+  input: CrochetInput,
 ): PricingResult {
   const {
     baseLabor,

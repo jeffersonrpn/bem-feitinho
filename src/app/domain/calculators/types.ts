@@ -7,6 +7,16 @@ export type CalculatorFieldOption<T extends string = string> = {
   value?: number;
 };
 
+export type Fee =
+  | {
+    type: "fixed";
+    value: number;
+  }
+  | {
+    type: "percentage";
+    value: number;
+  };
+
 export type CalculatorFieldType =
   | "number"
   | "currency"

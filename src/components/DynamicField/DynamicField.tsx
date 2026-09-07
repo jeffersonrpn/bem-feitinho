@@ -16,11 +16,13 @@ import { FeeField } from "./FeeField";
 type DynamicFieldProps<T extends FieldValues> = {
   field: CalculatorField;
   control: Control<T>;
+  influenceText?: string;
 };
 
 export function DynamicField<T extends FieldValues>({
   field,
   control,
+  influenceText,
 }: DynamicFieldProps<T>) {
   return (
     <Controller
@@ -35,6 +37,7 @@ export function DynamicField<T extends FieldValues>({
               onChange={controllerField.onChange}
               onBlur={controllerField.onBlur}
               error={fieldState.error?.message}
+              influenceText={influenceText}
             />
           );
         }
@@ -48,7 +51,7 @@ export function DynamicField<T extends FieldValues>({
               onChange={controllerField.onChange}
               onBlur={controllerField.onBlur}
               error={!!fieldState.error}
-              helperText={fieldState.error?.message}
+              helperText={fieldState.error?.message ?? influenceText}
               required={field.required}
             >
               {field.options?.map((option) => (
@@ -77,7 +80,7 @@ export function DynamicField<T extends FieldValues>({
             }}
             onBlur={controllerField.onBlur}
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message ?? influenceText}
             required={field.required}
             slotProps={{
               inputLabel: {

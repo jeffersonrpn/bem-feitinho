@@ -123,7 +123,7 @@ export const tattooCalculator: CalculatorConfig = {
           label: "Colorida",
         },
         {
-          id: "black-and-color",
+          id: "black-color",
           label: "Preto + colorido",
         },
       ],

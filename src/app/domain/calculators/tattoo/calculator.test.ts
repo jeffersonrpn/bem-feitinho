@@ -165,4 +165,5 @@ describe("Tattoo Calculator", () => {
       }),
     ).toThrow("Complexity must be between 1 and 10.");
   });
+
 });

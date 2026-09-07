@@ -4,6 +4,7 @@ import {
   Stack,
   FormControl,
   InputLabel,
+  FormHelperText,
   Select,
   MenuItem,
   TextField,
@@ -18,6 +19,7 @@ type FeeFieldProps = {
   onChange: (value: TattooFee[]) => void;
   onBlur: () => void;
   error?: string;
+  influenceText?: string;
 };
 
 export function FeeField({
@@ -26,6 +28,7 @@ export function FeeField({
   onChange,
   onBlur,
   error,
+  influenceText,
 }: FeeFieldProps) {
   const [type, setType] = useState<"fixed" | "percentage">("percentage");
 
@@ -101,6 +104,10 @@ export function FeeField({
           onRemove={() => removeFee(index)}
         />
       ))}
+
+      {influenceText && (
+        <FormHelperText>{influenceText}</FormHelperText>
+      )}
     </Stack>
   );
 }

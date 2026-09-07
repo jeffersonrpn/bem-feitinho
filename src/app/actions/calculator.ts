@@ -67,9 +67,18 @@ export async function saveCalculation(
   calculatorId: string,
   values: Record<string, unknown>,
   adjustedTotal: number,
+  projectName: string,
 ) {
   if (!Number.isFinite(adjustedTotal) || adjustedTotal < 0) {
     throw new Error("Preço ajustado inválido.");
+  }
+
+  const normalizedProjectName = typeof projectName === "string"
+    ? projectName.trim()
+    : "";
+
+  if (!normalizedProjectName || normalizedProjectName.length > 120) {
+    throw new Error("Invalid project name.");
   }
 
   const supabase = await createSupabaseServerClient();
@@ -88,6 +97,7 @@ export async function saveCalculation(
     .from("calculations")
     .insert({
       user_id: user.id,
+      project_name: normalizedProjectName,
       calculator_id: calculatorId,
       calculator_version: 1,
       input_snapshot: values,

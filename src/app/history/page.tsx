@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 type CalculationRow = {
   id: string;
+  project_name: string;
   calculator_id: string;
   complexity_score: number;
   suggested_total: number;
@@ -53,7 +54,7 @@ export default async function HistoryPage() {
   const { data, error } = await supabase
     .from("calculations")
     .select(
-      "id, calculator_id, complexity_score, suggested_total, adjusted_total, created_at",
+      "id, project_name, calculator_id, complexity_score, suggested_total, adjusted_total, created_at",
     )
     .order("created_at", { ascending: false });
 
@@ -81,6 +82,9 @@ export default async function HistoryPage() {
             <CardContent>
               <Stack spacing={1}>
                 <Typography variant="h6">
+                  {calculation.project_name}
+                </Typography>
+                <Typography color="text.secondary">
                   {calculation.calculator_id === "tattoo"
                     ? "Tatuagem"
                     : calculation.calculator_id}

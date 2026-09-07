@@ -8,6 +8,10 @@ import {
   Card,
   CardContent,
   Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Stack,
   TextField,
   Typography,
@@ -36,7 +40,7 @@ type CalculatorResultProps = {
   result: PricingResult;
   adjustedTotal?: number;
   onAdjustedTotalChange?: (value: number) => void;
-  onSave: () => void | Promise<void>;
+  onSave: (projectName: string) => Promise<boolean>;
   saveStatus?: "saving" | "saved";
   saveError?: string;
 };
@@ -52,6 +56,9 @@ export function CalculatorResult({
   const [localEditedTotal, setLocalEditedTotal] = useState(
     result.total / 100,
   );
+  const [projectName, setProjectName] = useState("");
+  const [projectNameError, setProjectNameError] = useState<string>();
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const {
     breakdown,
   } = result;
@@ -60,6 +67,21 @@ export function CalculatorResult({
   const displayedTotal = Number.isFinite(editedTotal)
     ? Math.round(editedTotal * 100)
     : result.total;
+
+  async function handleProjectSave() {
+    const normalizedProjectName = projectName.trim();
+
+    if (!normalizedProjectName) {
+      setProjectNameError("Informe um nome para o projeto.");
+      return;
+    }
+
+    const saved = await onSave(normalizedProjectName);
+
+    if (saved) {
+      setIsProjectDialogOpen(false);
+    }
+  }
 
   return (
     <Stack spacing={3}>
@@ -104,7 +126,7 @@ export function CalculatorResult({
 
         <Button
           variant="contained"
-          onClick={onSave}
+          onClick={() => setIsProjectDialogOpen(true)}
           disabled={saveStatus === "saving" || saveStatus === "saved"}
           sx={{ mt: 2 }}
         >
@@ -130,6 +152,53 @@ export function CalculatorResult({
             {saveError}
           </Alert>
         )}
+
+        <Dialog
+          open={isProjectDialogOpen}
+          onClose={() => setIsProjectDialogOpen(false)}
+          fullWidth
+          maxWidth="xs"
+        >
+          <Box
+            component="form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleProjectSave();
+            }}
+          >
+            <DialogTitle>Nome do projeto</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                fullWidth
+                label="Nome do projeto"
+                value={projectName}
+                onChange={(event) => {
+                  setProjectName(event.target.value);
+                  setProjectNameError(undefined);
+                }}
+                error={Boolean(projectNameError)}
+                helperText={projectNameError ?? "Ex.: Tatuagem floral da Ana"}
+                slotProps={{ htmlInput: { maxLength: 120 } }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                type="button"
+                onClick={() => setIsProjectDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={saveStatus === "saving"}
+              >
+                Salvar cálculo
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
       </Box>
 
       <Card>

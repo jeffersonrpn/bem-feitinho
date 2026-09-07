@@ -108,6 +108,7 @@ export function CalculatorFlow({
           pending.calculatorId,
           pending.values,
           pending.adjustedTotal,
+          pending.projectName ?? "Projeto sem nome",
         );
 
         setSaveStatus("saved");
@@ -170,9 +171,9 @@ export function CalculatorFlow({
     );
   }
 
-  async function handleSave() {
+  async function handleSave(projectName: string): Promise<boolean> {
     if (!selectedCalculator || !result || !formValues) {
-      return;
+      return false;
     }
 
     setSaveError(undefined);
@@ -189,6 +190,7 @@ export function CalculatorFlow({
           calculatorId: selectedCalculator.id,
           values: formValues,
           adjustedTotal: finalTotal,
+          projectName,
         };
 
         sessionStorage.setItem(
@@ -208,7 +210,7 @@ export function CalculatorFlow({
         if (error) {
           throw error;
         }
-        return;
+        return true;
       }
 
       setSaveStatus("saving");
@@ -216,11 +218,14 @@ export function CalculatorFlow({
         selectedCalculator.id,
         formValues,
         finalTotal,
+        projectName,
       );
       setSaveStatus("saved");
+      return true;
     } catch {
       setSaveStatus(undefined);
       setSaveError("Não foi possível salvar este cálculo.");
+      return false;
     }
   }
 

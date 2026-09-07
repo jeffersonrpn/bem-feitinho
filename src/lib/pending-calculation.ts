@@ -4,4 +4,5 @@ export type PendingCalculation = {
   calculatorId: string;
   values: Record<string, unknown>;
   adjustedTotal: number;
+  projectName: string;
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   AppBar,
   Avatar,
@@ -80,6 +81,13 @@ export function AppHeader({
                   <Typography variant="body2" color="text.secondary">
                     {label}
                   </Typography>
+                </MenuItem>
+                <MenuItem
+                  component={Link}
+                  href="/history"
+                  onClick={() => setAnchorEl(null)}
+                >
+                  Histórico de projetos
                 </MenuItem>
                 <Box component="form" action={logoutAction}>
                   <MenuItem

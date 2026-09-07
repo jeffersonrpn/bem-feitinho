@@ -3,10 +3,10 @@
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import HighlightOffRoundedIcon from "@mui/icons-material/HighlightOffRounded";
 
-import type { TattooFee } from "@/app/domain/calculators/tattoo/types";
+import type { Fee } from "@/app/domain/calculators/types";
 
 type FeeItemProps = {
-  fee: TattooFee;
+  fee: Fee;
   onRemove: () => void;
 };
 

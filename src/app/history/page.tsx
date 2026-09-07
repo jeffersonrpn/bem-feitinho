@@ -43,7 +43,7 @@ export default async function HistoryPage() {
           <Typography color="text.secondary">
             Entre com o Google pela calculadora para acessar seu histórico.
           </Typography>
-          <Link href="/">
+          <Link href="/calculadora">
             <Button variant="contained">Voltar para a calculadora</Button>
           </Link>
         </Stack>
@@ -106,12 +106,15 @@ export default async function HistoryPage() {
                 <Typography sx={{ fontWeight: 700 }}>
                   Preço definido: {formatMoney(calculation.adjusted_total)}
                 </Typography>
+                <Link href={`/history/${calculation.id}`}>
+                  <Button size="small">Ver projeto</Button>
+                </Link>
               </Stack>
             </CardContent>
           </Card>
         ))}
 
-        <Link href="/">
+        <Link href="/calculadora">
           <Button>Novo cálculo</Button>
         </Link>
       </Stack>

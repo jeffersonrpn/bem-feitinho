@@ -15,6 +15,12 @@ export const tattooCalculator: CalculatorConfig = {
       required: false,
       min: 0,
       step: 0.5,
+      multiplier: {
+        type: "linear",
+        base: 1,
+        step: 0.05,
+        referenceValue: 1,
+      },
     },
 
     {
@@ -25,6 +31,12 @@ export const tattooCalculator: CalculatorConfig = {
       min: 1,
       max: 10,
       step: 1,
+      multiplier: {
+        type: "linear",
+        base: 1,
+        step: 0.1,
+        referenceValue: 1,
+      },
     },
 
     {
@@ -32,50 +44,60 @@ export const tattooCalculator: CalculatorConfig = {
       label: "Parte do corpo",
       type: "select",
       required: false,
-
       options: [
         {
           id: "arm",
+          multiplier: 1,
           label: "Braço",
         },
         {
           id: "forearm",
+          multiplier: 1,
           label: "Antebraço",
         },
         {
           id: "hand",
+          multiplier: 1.25,
           label: "Mão",
         },
         {
           id: "leg",
+          multiplier: 1,
           label: "Perna",
         },
         {
           id: "thigh",
+          multiplier: 1,
           label: "Coxa",
         },
         {
           id: "foot",
+          multiplier: 1.25,
           label: "Pé",
         },
         {
           id: "back",
+          multiplier: 1.1,
           label: "Costas",
         },
         {
           id: "chest",
+          multiplier: 1.1,
           label: "Peito",
         },
         {
           id: "ribs",
+          multiplier: 1.25,
           label: "Costela",
         },
         {
           id: "neck",
+          multiplier: 1.25,
           label: "Pescoço",
         },
         {
           id: "face",
+          multiplier: 1.5,
           label: "Rosto",
         },
       ],
@@ -86,18 +108,20 @@ export const tattooCalculator: CalculatorConfig = {
       label: "Tipo de desenho",
       type: "select",
       required: false,
-
       options: [
         {
           id: "ready",
+          multiplier: 1,
           label: "Desenho pronto",
         },
         {
           id: "original",
+          multiplier: 1.25,
           label: "Desenho original",
         },
         {
           id: "adjustment",
+          multiplier: 1.1,
           label: "Projeto de ajuste",
         },
       ],
@@ -108,22 +132,25 @@ export const tattooCalculator: CalculatorConfig = {
       label: "Cores e acabamento",
       type: "select",
       required: false,
-
       options: [
         {
           id: "black",
+          multiplier: 1,
           label: "Apenas preto",
         },
         {
           id: "black-shading",
+          multiplier: 1.15,
           label: "Preto + sombreado",
         },
         {
           id: "color",
+          multiplier: 1.25,
           label: "Colorida",
         },
         {
           id: "black-color",
+          multiplier: 1.3,
           label: "Preto + colorido",
         },
       ],
@@ -180,6 +207,10 @@ export const tattooCalculator: CalculatorConfig = {
       min: 0,
       max: 100,
       step: 1,
+      multiplier: {
+        type: "margin",
+        percentageBase: 100,
+      },
     },
   ],
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuItem, TextField } from "@mui/material";
+import { Grid, MenuItem, TextField, Typography } from "@mui/material";
 
 import {
   Controller,
@@ -25,106 +25,116 @@ export function DynamicField<T extends FieldValues>({
   influenceText,
 }: DynamicFieldProps<T>) {
   return (
-    <Controller
-      name={field.id as Path<T>}
-      control={control}
-      render={({ field: controllerField, fieldState }) => {
-        if (field.type === "fee-list") {
-          return (
-            <FeeField
-              label={field.label}
-              value={(controllerField.value as TattooFee[] | undefined) ?? []}
-              onChange={controllerField.onChange}
-              onBlur={controllerField.onBlur}
-              error={fieldState.error?.message}
-              influenceText={influenceText}
-            />
-          );
-        }
-
-        if (field.type === "select") {
-          return (
-            <TextField
-              select
-              label={field.label}
-              value={controllerField.value ?? ""}
-              onChange={controllerField.onChange}
-              onBlur={controllerField.onBlur}
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message ?? influenceText}
-              required={field.required}
-            >
-              {field.options?.map((option) => (
-                <MenuItem key={option.id} value={option.id}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          );
-        }
-
-        const isCurrency = field.type === "currency";
-        const isPercentage = field.type === "percentage";
-
-        return (
-          <TextField
-            label={field.label}
-            type="number"
-            value={controllerField.value ?? ""}
-            onChange={(event) => {
-              const value = event.target.value;
-
-              controllerField.onChange(
-                value === "" ? undefined : Number(value),
+    <Grid container spacing={2}>
+      <Grid size={10}>
+        <Controller
+          name={field.id as Path<T>}
+          control={control}
+          render={({ field: controllerField, fieldState }) => {
+            if (field.type === "fee-list") {
+              return (
+                <FeeField
+                  label={field.label}
+                  value={(controllerField.value as TattooFee[] | undefined) ?? []}
+                  onChange={controllerField.onChange}
+                  onBlur={controllerField.onBlur}
+                  error={fieldState.error?.message}
+                />
               );
-            }}
-            onBlur={controllerField.onBlur}
-            error={!!fieldState.error}
-            helperText={fieldState.error?.message ?? influenceText}
-            required={field.required}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-              htmlInput: {
-                min: field.min,
-                max: field.max,
-                step: field.step,
-                inputMode: "decimal",
-              },
-              input: {
-                ...(isCurrency
-                  ? {
-                      startAdornment: (
-                        <span
-                          style={{
-                            marginRight: 8,
-                          }}
-                        >
-                          R$
-                        </span>
-                      ),
-                    }
-                  : {}),
-                ...(isPercentage
-                  ? {
-                      endAdornment: (
-                        <span
-                          style={{
-                            marginLeft: 8,
-                          }}
-                        >
-                          %
-                        </span>
-                      ),
-                    }
-                  : {}),
-              },
-            }}
-          />
-        );
-      }}
-    />
+            }
+
+            if (field.type === "select") {
+              return (
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label={field.label}
+                  value={controllerField.value ?? ""}
+                  onChange={controllerField.onChange}
+                  onBlur={controllerField.onBlur}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message ?? influenceText}
+                  required={field.required}
+                >
+                  {field.options?.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              );
+            }
+
+            const isCurrency = field.type === "currency";
+            const isPercentage = field.type === "percentage";
+
+            return (
+              <TextField
+                fullWidth
+                label={field.label}
+                type="number"
+                size="small"
+                value={controllerField.value ?? ""}
+                onChange={(event) => {
+                  const value = event.target.value;
+
+                  controllerField.onChange(
+                    value === "" ? undefined : Number(value),
+                  );
+                }}
+                onBlur={controllerField.onBlur}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                required={field.required}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                  htmlInput: {
+                    min: field.min,
+                    max: field.max,
+                    step: field.step,
+                    inputMode: "decimal",
+                  },
+                  input: {
+                    ...(isCurrency
+                      ? {
+                          startAdornment: (
+                            <span
+                              style={{
+                                marginRight: 8,
+                              }}
+                            >
+                              R$
+                            </span>
+                          ),
+                        }
+                      : {}),
+                    ...(isPercentage
+                      ? {
+                          endAdornment: (
+                            <span
+                              style={{
+                                marginLeft: 8,
+                              }}
+                            >
+                              %
+                            </span>
+                          ),
+                        }
+                      : {}),
+                  },
+                }}
+              />
+            );
+          }}
+        />
+      </Grid>
+      <Grid size={2}>
+        <Typography variant="h4" component="span">{influenceText}</Typography>
+      </Grid>
+    </Grid>
   );
 }
 

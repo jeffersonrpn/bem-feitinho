@@ -7,9 +7,10 @@ import {
 
 import {
   Stack,
-  Paper,
   Typography,
+  Snackbar,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 import {
   useForm,
@@ -27,6 +28,7 @@ import {
 
 import type {
   CalculatorConfig,
+  CalculatorField,
   PricingResult,
 } from "@/domain/calculators/types";
 import {
@@ -59,19 +61,20 @@ function formatMoney(cents: number) {
   }).format(cents / 100);
 }
 
+const StyledSnackbar = styled(Snackbar)(({ theme }) => ({
+  bottom: theme.spacing(11),
+  left: "auto",
+  width: "50vw",
+  "& .MuiSnackbarContent-root": {
+    justifyContent: "end",
+    backgroundColor: theme.palette.primary.dark,
+    fontSize: theme.typography.body1.fontSize,
+  },
+}));
+
 function getTattooResult(
   values: FieldValues,
 ): PricingResult | undefined {
-  const complexity = values.complexity;
-
-  if (
-    typeof complexity !== "number" ||
-    complexity < 1 ||
-    complexity > 10
-  ) {
-    return undefined;
-  }
-
   try {
     return calculateTattooPrice(values as TattooInput);
   } catch {
@@ -83,34 +86,39 @@ function formatMultiplier(multiplier: number) {
   return multiplier.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }) + "×";
+  });
 }
 
-function getMultiplierHints(result: PricingResult | undefined) {
-  const adjustments = new Map<string, number>(
-    result?.breakdown.adjustments.map(({ id, multiplier }) => [id, multiplier]),
-  );
-  const profitMargin = result?.breakdown.profit && result.subtotal
-    ? result.total / result.subtotal
-    : 1;
+function getMultiplierHint(
+  field: CalculatorField,
+  value: unknown,
+  result: PricingResult | undefined,
+) {
+  if (field.type === "select") {
+    const multiplier = field.options?.find(
+      (option) => option.id === value,
+    )?.multiplier;
 
-  return {
-    sizeCm: "Sem impacto no cálculo atual.",
-    complexity: result
-      ? `Multiplicador de esforço: ${formatMultiplier(result.breakdown.effortMultiplier)}`
-      : undefined,
-    bodyPart: `Multiplicador: ${formatMultiplier(adjustments.get("body-part") ?? 1)}`,
-    design: `Multiplicador: ${formatMultiplier(adjustments.get("design") ?? 1)}`,
-    style: `Multiplicador: ${formatMultiplier(adjustments.get("style") ?? 1)}`,
-    materials: "Somado diretamente ao custo.",
-    sessions: "Combinado com as horas por sessão.",
-    hoursPerSession: "Combinado com o número de sessões.",
-    indirectCosts: "Somado diretamente ao custo.",
-    fees: "Aplicadas sobre o custo operacional.",
-    profitMargin: result
-      ? `Multiplicador do total: ${formatMultiplier(profitMargin)}`
-      : undefined,
-  };
+    return multiplier === undefined
+      ? undefined
+      : `${formatMultiplier(multiplier)}`;
+  }
+
+  if (
+    field.multiplier?.type === "linear" &&
+    typeof value === "number"
+  ) {
+    const { base, step, referenceValue } = field.multiplier;
+    const multiplier = base + (value - referenceValue) * step;
+
+    return `${formatMultiplier(multiplier)}`;
+  }
+
+  if (field.multiplier?.type === "margin" && result?.subtotal) {
+    return `${formatMultiplier(result.total / result.subtotal)}`;
+  }
+
+  return field.calculationHint;
 }
 
 export const CalculatorForm = forwardRef<
@@ -139,7 +147,6 @@ export const CalculatorForm = forwardRef<
       calculator.id === "tattoo"
         ? getTattooResult(values)
         : undefined;
-    const multiplierHints = getMultiplierHints(preview);
 
     useImperativeHandle(ref, () => ({
       submit: () => handleSubmit(onSubmit)(),
@@ -150,6 +157,7 @@ export const CalculatorForm = forwardRef<
       component="form"
       spacing={3}
       onSubmit={handleSubmit(onSubmit)}
+      sx={{ pb: 10 }}
     >
       <div>
         <Typography variant="h2">
@@ -173,26 +181,24 @@ export const CalculatorForm = forwardRef<
               key={field.id}
               field={field}
               control={control}
-              influenceText={multiplierHints[field.id as keyof typeof multiplierHints]}
+              influenceText={getMultiplierHint(
+                field,
+                values[field.id],
+                preview,
+              )}
             />
           ),
         )}
       </Stack>
 
-      <Paper
-        variant="outlined"
-        sx={{ px: 2, py: 1.5, borderRadius: 2 }}
-        aria-live="polite"
-      >
-        <Typography variant="body2" color="text.secondary">
-          Preço estimado
-        </Typography>
-        <Typography variant="h3" sx={{ mt: 0.25 }}>
-          {preview
-            ? formatMoney(preview.total)
-            : "Preencha a complexidade para ver a estimativa"}
-        </Typography>
-      </Paper>
+      <StyledSnackbar
+        open={true}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        message={preview
+          ? `${formatMoney(preview.total)}`
+          : "--"}
+      />
+
     </Stack>
   );
   },

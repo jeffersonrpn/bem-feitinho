@@ -19,6 +19,23 @@ describe("Tattoo Calculator", () => {
     expect(result.breakdown.labor).toBe(30000);
   });
 
+  it("applies the size multiplier to labor", () => {
+    const result = calculateTattooPrice({
+      sizeCm: 11,
+      sessions: 1,
+      hoursPerSession: 1,
+      complexity: 1,
+    });
+
+    expect(result.breakdown.labor).toBe(7500);
+    expect(result.breakdown.adjustments).toContainEqual({
+      id: "size",
+      label: "Tamanho",
+      multiplier: 1.5,
+      amount: 2500,
+    });
+  });
+
   it("accepts optional fields", () => {
     const result = calculateTattooPrice({
       complexity: 1,

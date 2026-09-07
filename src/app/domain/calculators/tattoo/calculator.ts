@@ -8,7 +8,6 @@ import type {
 import {
   addMoney,
   calculateMargin,
-  calculateEffortMultiplier,
   multiplyMoney,
   numberOrZero,
   toCents,
@@ -20,42 +19,64 @@ import type {
   TattooFee,
   TattooInput,
 } from "./types";
+import { tattooCalculator } from "./config";
 
-const BODY_PART_MULTIPLIERS: Record<
-  string,
-  number
-> = {
-  arm: 1,
-  forearm: 1,
-  hand: 1.25,
-  leg: 1,
-  thigh: 1,
-  foot: 1.25,
-  back: 1.1,
-  chest: 1.1,
-  ribs: 1.25,
-  neck: 1.25,
-  face: 1.5,
-};
+function getField(fieldId: string) {
+  const field = tattooCalculator.fields.find(
+    (item) => item.id === fieldId,
+  );
 
-const DESIGN_MULTIPLIERS: Record<
-  string,
-  number
-> = {
-  ready: 1,
-  original: 1.25,
-  adjustment: 1.1,
-};
+  if (!field) {
+    throw new Error(`Campo de cálculo não encontrado: ${fieldId}.`);
+  }
 
-const STYLE_MULTIPLIERS: Record<
-  string,
-  number
-> = {
-  black: 1,
-  "black-shading": 1.15,
-  color: 1.25,
-  "black-color": 1.3,
-};
+  return field;
+}
+
+function getOptionMultiplier(
+  fieldId: string,
+  optionId: string | undefined,
+) {
+  if (!optionId) {
+    return 1;
+  }
+
+  return getField(fieldId).options?.find(
+    (option) => option.id === optionId,
+  )?.multiplier ?? 1;
+}
+
+function getLinearMultiplier(
+  fieldId: string,
+  value: number,
+) {
+  const field = getField(fieldId);
+  const multiplier = field.multiplier;
+
+  if (multiplier?.type !== "linear") {
+    return 1;
+  }
+
+  if (
+    !Number.isFinite(value) ||
+    (field.min !== undefined && value < field.min) ||
+    (field.max !== undefined && value > field.max)
+  ) {
+    throw new Error("Complexity must be between 1 and 10.");
+  }
+
+  return multiplier.base +
+    (value - multiplier.referenceValue) * multiplier.step;
+}
+
+function getOptionalLinearMultiplier(
+  fieldId: string,
+  value: number | undefined,
+) {
+  return value === undefined
+    ? 1
+    : getLinearMultiplier(fieldId, value);
+}
 
 function createAdjustment(
   id: string,
@@ -89,7 +110,8 @@ function calculateLabor(
   referenceHourlyRate: Money;
 } {
   const complexityScore = input.complexity;
-  const effortMultiplier = calculateEffortMultiplier(
+  const effortMultiplier = getLinearMultiplier(
+    "complexity",
     complexityScore,
   );
   const referenceHourlyRate = toCents(
@@ -116,19 +138,38 @@ function calculateLabor(
   const adjustments: PricingAdjustment[] =
     [];
 
-  const bodyPartMultiplier =
-    input.bodyPart
-      ? BODY_PART_MULTIPLIERS[
-      input.bodyPart
-      ] ?? 1
-      : 1;
+  const sizeMultiplier = getOptionalLinearMultiplier(
+    "sizeCm",
+    input.sizeCm,
+  );
+
+  const sizeAdjustment = createAdjustment(
+    "size",
+    "Tamanho",
+    sizeMultiplier,
+    baseLabor,
+  );
+
+  if (sizeAdjustment) {
+    adjustments.push(sizeAdjustment);
+  }
+
+  const sizeLabor = multiplyMoney(
+    baseLabor,
+    sizeMultiplier,
+  );
+
+  const bodyPartMultiplier = getOptionMultiplier(
+    "bodyPart",
+    input.bodyPart,
+  );
 
   const bodyPartAdjustment =
     createAdjustment(
       "body-part",
       "Complexidade da parte do corpo",
       bodyPartMultiplier,
-      baseLabor,
+      sizeLabor,
     );
 
   if (bodyPartAdjustment) {
@@ -139,16 +180,14 @@ function calculateLabor(
 
   const bodyPartLabor =
     multiplyMoney(
-      baseLabor,
+      sizeLabor,
       bodyPartMultiplier,
     );
 
-  const designMultiplier =
-    input.design
-      ? DESIGN_MULTIPLIERS[
-      input.design
-      ] ?? 1
-      : 1;
+  const designMultiplier = getOptionMultiplier(
+    "design",
+    input.design,
+  );
 
   const designAdjustment =
     createAdjustment(
@@ -170,12 +209,10 @@ function calculateLabor(
       designMultiplier,
     );
 
-  const styleMultiplier =
-    input.style
-      ? STYLE_MULTIPLIERS[
-      input.style
-      ] ?? 1
-      : 1;
+  const styleMultiplier = getOptionMultiplier(
+    "style",
+    input.style,
+  );
 
   const styleAdjustment =
     createAdjustment(
@@ -317,7 +354,11 @@ export function calculateTattooPrice(
    */
   const profitMargin = numberOrZero(input.profitMargin);
 
-  const margin = profitMargin / 100;
+  const marginMultiplier = getField("profitMargin").multiplier;
+  const percentageBase = marginMultiplier?.type === "margin"
+    ? marginMultiplier.percentageBase
+    : 100;
+  const margin = profitMargin / percentageBase;
 
   /*
    * calculateMargin returns the final price

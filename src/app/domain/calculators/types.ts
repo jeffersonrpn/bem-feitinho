@@ -14,6 +14,18 @@ export type CalculatorFieldType =
   | "percentage"
   | "fee-list";
 
+export type CalculatorFieldMultiplier =
+  | {
+      type: "linear";
+      base: number;
+      step: number;
+      referenceValue: number;
+    }
+  | {
+      type: "margin";
+      percentageBase: number;
+    };
+
 export type CalculatorField = {
   id: string;
   label: string;
@@ -23,6 +35,8 @@ export type CalculatorField = {
   max?: number;
   step?: number;
   options?: CalculatorFieldOption[];
+  multiplier?: CalculatorFieldMultiplier;
+  calculationHint?: string;
 };
 
 export type PricingInput = Record<string, unknown>;

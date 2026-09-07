@@ -18,6 +18,7 @@ type FeeFieldProps = {
   onChange: (value: TattooFee[]) => void;
   onBlur: () => void;
   error?: string;
+  influenceText?: string;
 };
 
 export function FeeField({
@@ -65,6 +66,7 @@ export function FeeField({
         <Select
           value={type}
           label="Tipo de taxa"
+          size="small"
           onChange={(event) =>
             setType(event.target.value as "fixed" | "percentage")
           }
@@ -77,6 +79,7 @@ export function FeeField({
 
       <TextField
         fullWidth
+        size="small"
         type="number"
         label={type === "percentage" ? "Percentual" : "Valor"}
         value={feeValue}

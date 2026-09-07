@@ -8,10 +8,13 @@ import {
 import {
   Stack,
   Typography,
+  Snackbar,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 import {
   useForm,
+  useWatch,
   type FieldValues,
 } from "react-hook-form";
 
@@ -25,7 +28,15 @@ import {
 
 import type {
   CalculatorConfig,
+  CalculatorField,
+  PricingResult,
 } from "@/domain/calculators/types";
+import {
+  calculateTattooPrice,
+} from "@/domain/calculators/tattoo";
+import type {
+  TattooInput,
+} from "@/domain/calculators/tattoo/types";
 
 import {
   DynamicField,
@@ -42,6 +53,73 @@ type CalculatorFormProps = {
 type CalculatorFormHandle = {
   submit: () => void;
 };
+
+function formatMoney(cents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(cents / 100);
+}
+
+const StyledSnackbar = styled(Snackbar)(({ theme }) => ({
+  bottom: theme.spacing(11),
+  left: "auto",
+  width: "50vw",
+  "& .MuiSnackbarContent-root": {
+    justifyContent: "end",
+    backgroundColor: theme.palette.primary.dark,
+    fontSize: theme.typography.body1.fontSize,
+  },
+}));
+
+function getTattooResult(
+  values: FieldValues,
+): PricingResult | undefined {
+  try {
+    return calculateTattooPrice(values as TattooInput);
+  } catch {
+    return undefined;
+  }
+}
+
+function formatMultiplier(multiplier: number) {
+  return multiplier.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function getMultiplierHint(
+  field: CalculatorField,
+  value: unknown,
+  result: PricingResult | undefined,
+) {
+  if (field.type === "select") {
+    const multiplier = field.options?.find(
+      (option) => option.id === value,
+    )?.multiplier;
+
+    return multiplier === undefined
+      ? undefined
+      : `${formatMultiplier(multiplier)}`;
+  }
+
+  if (
+    field.multiplier?.type === "linear" &&
+    typeof value === "number"
+  ) {
+    const { base, step, referenceValue } = field.multiplier;
+    const multiplier = base + (value - referenceValue) * step;
+
+    return `${formatMultiplier(multiplier)}`;
+  }
+
+  if (field.multiplier?.type === "margin" && result?.subtotal) {
+    return `${formatMultiplier(result.total / result.subtotal)}`;
+  }
+
+  return field.calculationHint;
+}
 
 export const CalculatorForm = forwardRef<
   CalculatorFormHandle,
@@ -63,6 +141,12 @@ export const CalculatorForm = forwardRef<
       resolver: zodResolver(schema),
       mode: "onBlur",
     });
+    const values = useWatch({ control });
+
+    const preview =
+      calculator.id === "tattoo"
+        ? getTattooResult(values)
+        : undefined;
 
     useImperativeHandle(ref, () => ({
       submit: () => handleSubmit(onSubmit)(),
@@ -73,6 +157,7 @@ export const CalculatorForm = forwardRef<
       component="form"
       spacing={3}
       onSubmit={handleSubmit(onSubmit)}
+      sx={{ pb: 10 }}
     >
       <div>
         <Typography variant="h2">
@@ -96,10 +181,24 @@ export const CalculatorForm = forwardRef<
               key={field.id}
               field={field}
               control={control}
+              influenceText={getMultiplierHint(
+                field,
+                values[field.id],
+                preview,
+              )}
             />
           ),
         )}
       </Stack>
+
+      <StyledSnackbar
+        open={true}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        message={preview
+          ? `${formatMoney(preview.total)}`
+          : "--"}
+      />
+
     </Stack>
   );
   },

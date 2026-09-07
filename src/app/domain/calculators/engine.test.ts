@@ -41,25 +41,25 @@ describe("Calculator engine", () => {
       const result = calculateTattooPrice(input);
 
       expect(result).toEqual({
-        total: 67101,
-        subtotal: 67101,
-        suggestedTotal: 67101,
+        total: 98232,
+        subtotal: 98232,
+        suggestedTotal: 98232,
         breakdown: {
           baseLabor: 30000,
-          labor: 53906,
+          labor: 83554,
           complexityScore: 1,
           effortMultiplier: 1,
           referenceHourlyRate: 5000,
           materials: 6000,
           indirectCosts: 4000,
           fees: {
-            total: 3195,
+            total: 4678,
             items: [
               {
                 label: "Taxa percentual 1",
                 type: "percentage",
                 rate: 5,
-                amount: 3195,
+                amount: 4678,
               },
             ],
           },
@@ -68,22 +68,28 @@ describe("Calculator engine", () => {
 
           adjustments: [
             {
+              id: "size",
+              label: "Tamanho",
+              multiplier: 1.55,
+              amount: 16500,
+            },
+            {
               id: "body-part",
               label: "Complexidade da parte do corpo",
               multiplier: 1.25,
-              amount: 7500,
+              amount: 11625,
             },
             {
               id: "design",
               label: "Tipo de desenho",
               multiplier: 1.25,
-              amount: 9375,
+              amount: 14531,
             },
             {
               id: "style",
               label: "Cores e acabamento",
               multiplier: 1.15,
-              amount: 7031,
+              amount: 10898,
             },
           ],
         },

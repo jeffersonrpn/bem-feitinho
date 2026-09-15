@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import {
+  Alert,
   Stack,
   Typography,
   Snackbar,
@@ -59,7 +60,7 @@ function formatMoney(cents: number) {
 }
 
 const StyledSnackbar = styled(Snackbar)(({ theme }) => ({
-  bottom: theme.spacing(11),
+  top: theme.spacing(11),
   left: "auto",
   width: "50vw",
   "& .MuiSnackbarContent-root": {
@@ -141,9 +142,12 @@ export const CalculatorForm = forwardRef<
     const {
       control,
       handleSubmit,
+      formState: {
+        isValid,
+      },
     } = useForm({
       resolver: zodResolver(schema),
-      mode: "onBlur",
+      mode: "onChange",
     });
     const values = useWatch({ control });
 
@@ -193,9 +197,19 @@ export const CalculatorForm = forwardRef<
         )}
       </Stack>
 
+      <Alert
+        severity={isValid ? "success" : "info"}
+        variant="outlined"
+        aria-live="polite"
+      >
+        {isValid
+          ? "Formulário válido. Você já pode calcular o preço."
+          : "Preencha os campos obrigatórios para calcular o preço."}
+      </Alert>
+
       <StyledSnackbar
         open={true}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         message={preview
           ? `${formatMoney(preview.total)}`
           : "--"}

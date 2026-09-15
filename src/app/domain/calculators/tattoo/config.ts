@@ -199,5 +199,19 @@ export const tattooCalculator: CalculatorConfig = {
       required: false,
     },
 
+    {
+      id: "profitMargin",
+      label: "Margem de lucro",
+      type: "percentage",
+      required: false,
+      min: 0,
+      max: 100,
+      step: 1,
+      multiplier: {
+        type: "margin",
+        percentageBase: 100,
+      },
+    },
+
   ],
 };

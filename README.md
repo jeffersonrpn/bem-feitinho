@@ -41,6 +41,35 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 Set the same variables in the Vercel project environment settings for Preview
 and Production deployments.
 
+## Daily Supabase report and keep-alive
+
+The scheduled report stores the previous calendar day's metrics in
+`daily_reports`, using the `America/Sao_Paulo` time zone. It is refreshed three
+times per day and is idempotent, so repeated executions update the same row.
+
+Apply both database migrations in `supabase/migrations/` before enabling the
+workflow. Configure these additional Vercel Production environment variables:
+
+```bash
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-service-role-key
+CRON_SECRET=your-long-random-cron-secret
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` is the Supabase service-role key and must remain
+server-only. `CRON_SECRET` must be a distinct, long random value. Do not use a
+`NEXT_PUBLIC_` prefix for either secret.
+
+In the GitHub repository, create Actions secrets with these names:
+
+- `CRON_ENDPOINT`: the production URL ending in `/api/cron/daily-report`, for
+  example `https://bem-feitinho.vercel.app/api/cron/daily-report`.
+- `CRON_SECRET`: the same value configured in Vercel.
+
+The workflow runs at 03:15, 11:15, and 19:15 UTC. To validate it after deploy,
+open **Actions > Refresh daily Supabase report > Run workflow**, then confirm
+that the workflow succeeded and that `daily_reports` has one row for the prior
+São Paulo date. Re-running it must update that row rather than create another.
+
 ### Database migration
 
 Apply `supabase/migrations/202609030001_create_calculations.sql` in the Supabase

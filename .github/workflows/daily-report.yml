@@ -1,0 +1,24 @@
+name: Refresh daily Supabase report
+
+on:
+  schedule:
+    - cron: "15 3,11,19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request the daily report refresh
+        env:
+          CRON_ENDPOINT: ${{ secrets.CRON_ENDPOINT }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$CRON_ENDPOINT"
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$CRON_ENDPOINT"

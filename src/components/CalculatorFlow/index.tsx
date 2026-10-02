@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BottomNavigation,
@@ -52,14 +57,53 @@ type StoredCalculatorFlow = {
 };
 
 const CALCULATOR_FLOW_STATE_KEY = "bem-feitinho:calculator-flow";
+const CALCULATOR_FLOW_STATE_EVENT = "bem-feitinho:calculator-flow-state-change";
+
+function subscribeToCalculatorFlowState(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(CALCULATOR_FLOW_STATE_EVENT, onStoreChange);
+
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(CALCULATOR_FLOW_STATE_EVENT, onStoreChange);
+  };
+}
+
+function getCalculatorFlowSnapshot() {
+  return sessionStorage.getItem(CALCULATOR_FLOW_STATE_KEY);
+}
+
+function getServerCalculatorFlowSnapshot() {
+  return null;
+}
+
+function storeCalculatorFlow(value: string) {
+  sessionStorage.setItem(CALCULATOR_FLOW_STATE_KEY, value);
+  window.dispatchEvent(new Event(CALCULATOR_FLOW_STATE_EVENT));
+}
+
+function clearCalculatorFlow() {
+  sessionStorage.removeItem(CALCULATOR_FLOW_STATE_KEY);
+  window.dispatchEvent(new Event(CALCULATOR_FLOW_STATE_EVENT));
+}
+
+function parseStoredCalculatorFlow(
+  value: string | null,
+): StoredCalculatorFlow | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(value) as StoredCalculatorFlow;
+  } catch {
+    return undefined;
+  }
+}
 
 export function CalculatorFlow({
   calculators,
 }: CalculatorFlowProps) {
-  const [selectedCalculator, setSelectedCalculator] = useState<
-    CalculatorConfig | undefined
-  >();
-
   const [result, setResult] =
     useState<
       PricingResult | undefined
@@ -86,6 +130,24 @@ export function CalculatorFlow({
     : routeCalculatorId
       ? 1
       : 0;
+  const selectedCalculator = calculators.find(
+    (item) => item.id === routeCalculatorId,
+  );
+  const storedFlowValue = useSyncExternalStore(
+    subscribeToCalculatorFlowState,
+    getCalculatorFlowSnapshot,
+    getServerCalculatorFlowSnapshot,
+  );
+  const storedFlow = parseStoredCalculatorFlow(storedFlowValue);
+  const restoredFlow = activeStep === 2 &&
+    storedFlow?.calculatorId === routeCalculatorId
+    ? storedFlow
+    : undefined;
+  const currentResult = result ?? restoredFlow?.result;
+  const currentFormValues = formValues ?? restoredFlow?.values;
+  const currentAdjustedTotal = result
+    ? adjustedTotal
+    : restoredFlow?.adjustedTotal;
 
   useEffect(() => {
     if (!routeCalculatorId) {
@@ -100,35 +162,13 @@ export function CalculatorFlow({
       router.replace("/calculadora");
       return;
     }
-
-    setSelectedCalculator(calculator);
   }, [calculators, routeCalculatorId, router]);
 
   useEffect(() => {
-    if (activeStep !== 2 || result || !routeCalculatorId) {
-      return;
+    if (storedFlowValue && !parseStoredCalculatorFlow(storedFlowValue)) {
+      clearCalculatorFlow();
     }
-
-    const storedValue = sessionStorage.getItem(CALCULATOR_FLOW_STATE_KEY);
-
-    if (!storedValue) {
-      return;
-    }
-
-    try {
-      const stored = JSON.parse(storedValue) as StoredCalculatorFlow;
-
-      if (stored.calculatorId !== routeCalculatorId) {
-        return;
-      }
-
-      setFormValues(stored.values);
-      setResult(stored.result);
-      setAdjustedTotal(stored.adjustedTotal);
-    } catch {
-      sessionStorage.removeItem(CALCULATOR_FLOW_STATE_KEY);
-    }
-  }, [activeStep, result, routeCalculatorId]);
+  }, [storedFlowValue]);
 
   useEffect(() => {
     const pendingValue = sessionStorage.getItem(
@@ -162,7 +202,6 @@ export function CalculatorFlow({
           pending.values,
         );
 
-        setSelectedCalculator(calculator);
         setFormValues(pending.values);
         setResult(calculated);
         setAdjustedTotal(pending.adjustedTotal);
@@ -188,10 +227,6 @@ export function CalculatorFlow({
   function handleCalculatorSelect(
     calculator: CalculatorConfig,
   ) {
-    setSelectedCalculator(
-      calculator,
-    );
-
     router.push(`/calculadora/${calculator.id}`);
   }
 
@@ -212,8 +247,7 @@ export function CalculatorFlow({
     setAdjustedTotal(undefined);
     setSaveStatus(undefined);
     setSaveError(undefined);
-    sessionStorage.setItem(
-      CALCULATOR_FLOW_STATE_KEY,
+    storeCalculatorFlow(
       JSON.stringify({
         calculatorId: selectedCalculator.id,
         values,
@@ -224,32 +258,27 @@ export function CalculatorFlow({
   }
 
   function handleRestart() {
-    setSelectedCalculator(
-      undefined,
-    );
-
     setResult(undefined);
     setFormValues(undefined);
     setAdjustedTotal(undefined);
     setSaveStatus(undefined);
     setSaveError(undefined);
-    sessionStorage.removeItem(CALCULATOR_FLOW_STATE_KEY);
+    clearCalculatorFlow();
     router.push("/calculadora");
   }
 
   function handleAdjustedTotalChange(value: number) {
     setAdjustedTotal(value);
 
-    if (!selectedCalculator || !result || !formValues) {
+    if (!selectedCalculator || !currentResult || !currentFormValues) {
       return;
     }
 
-    sessionStorage.setItem(
-      CALCULATOR_FLOW_STATE_KEY,
+    storeCalculatorFlow(
       JSON.stringify({
         calculatorId: selectedCalculator.id,
-        values: formValues,
-        result,
+        values: currentFormValues,
+        result: currentResult,
         adjustedTotal: value,
       }),
     );
@@ -260,7 +289,7 @@ export function CalculatorFlow({
   }
 
   async function handleSave(projectName: string): Promise<boolean> {
-    if (!selectedCalculator || !result || !formValues) {
+    if (!selectedCalculator || !currentResult || !currentFormValues) {
       return false;
     }
 
@@ -271,12 +300,12 @@ export function CalculatorFlow({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const finalTotal = adjustedTotal ?? result.total / 100;
+      const finalTotal = currentAdjustedTotal ?? currentResult.total / 100;
 
       if (!user) {
         const pending: PendingCalculation = {
           calculatorId: selectedCalculator.id,
-          values: formValues,
+          values: currentFormValues,
           adjustedTotal: finalTotal,
           projectName,
         };
@@ -304,7 +333,7 @@ export function CalculatorFlow({
       setSaveStatus("saving");
       await saveCalculation(
         selectedCalculator.id,
-        formValues,
+        currentFormValues,
         finalTotal,
         projectName,
       );
@@ -357,10 +386,10 @@ export function CalculatorFlow({
             />
           )}
 
-        {activeStep === 2 && result && (
+        {activeStep === 2 && currentResult && (
           <CalculatorResult
-            result={result}
-            adjustedTotal={adjustedTotal}
+            result={currentResult}
+            adjustedTotal={currentAdjustedTotal}
             onAdjustedTotalChange={
               handleAdjustedTotalChange
             }

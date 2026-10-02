@@ -118,7 +118,7 @@ function DetailRow({
   return (
     <Stack direction="row">
       <Typography>{label}</Typography>
-      <Typography>
+      <Typography sx={{ fontWeight: emphasized ? 700 : undefined }}>
         {formatMoney(value)}
       </Typography>
     </Stack>

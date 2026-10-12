@@ -400,7 +400,7 @@ export function CalculatorFlow({
         )}
       </Box>
       {activeStep > 0 && (
-        <Paper sx={{
+        <Paper className="calculator-dock" sx={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
           zIndex: 1000,
           borderRadius: `2rem`,

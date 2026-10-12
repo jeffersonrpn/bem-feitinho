@@ -1,0 +1,151 @@
+:root {
+  color-scheme: light;
+  --color-cream: #fbf4df;
+  --color-paper: #fffcf2;
+  --color-ink: #493b31;
+  --color-leaf: #138b70;
+  --color-coral: #d45f56;
+  --color-lilac: #8d77be;
+  --color-sunshine: #e8b83f;
+  --color-line: #e7dcc4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--color-cream);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--color-ink);
+  background-color: var(--color-cream);
+  background-image: radial-gradient(#eadfca 1px, transparent 1px);
+  background-size: 18px 18px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #f4d778;
+  color: var(--color-ink);
+}
+
+a {
+  color: inherit;
+}
+
+.home-intro {
+  position: relative;
+  margin: 1.25rem auto 1.5rem;
+  padding: 1.35rem 1rem 1.15rem;
+  isolation: isolate;
+}
+
+.home-intro::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0.5rem;
+  border: 2px solid #e7dcc4;
+  border-radius: 30px;
+  background: var(--color-paper);
+  box-shadow: 0 5px 0 #e7dcc4;
+  content: "";
+}
+
+.home-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.8rem;
+  padding: 0.3rem 0.7rem;
+  border: 2px solid #f0d98b;
+  border-radius: 999px;
+  background: #fff2c7;
+  color: #80601c;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-kicker::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--color-coral);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.calculator-options > .MuiCard-root:nth-of-type(4n + 1) {
+  border-color: #aad4bf;
+  box-shadow: 0 5px 0 #aad4bf;
+}
+
+.calculator-options > .MuiCard-root:nth-of-type(4n + 2) {
+  border-color: #f0d98b;
+  box-shadow: 0 5px 0 #f0d98b;
+}
+
+.calculator-options > .MuiCard-root:nth-of-type(4n + 3) {
+  border-color: #efb7a5;
+  box-shadow: 0 5px 0 #efb7a5;
+}
+
+.calculator-options > .MuiCard-root:nth-of-type(4n + 4) {
+  border-color: #c8bce2;
+  box-shadow: 0 5px 0 #c8bce2;
+}
+
+.calculator-options > .MuiCard-root:active {
+  box-shadow: none;
+  transform: translateY(4px);
+}
+
+.calculator-options .MuiCardContent-root {
+  padding: 1.2rem 1.35rem;
+}
+
+.calculator-dock {
+  padding: 0.3rem;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 700px) {
+  .home-intro {
+    margin-top: 2rem;
+    padding-block: 1.8rem 1.5rem;
+  }
+
+  .calculator-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .calculator-options > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

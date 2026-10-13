@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   Button,
   Card,
@@ -39,13 +38,13 @@ export default async function HistoryPage() {
     return (
       <Container maxWidth="sm" sx={{ py: 4 }}>
         <Stack spacing={2}>
-          <Typography variant="h2">Seus cálculos</Typography>
+          <Typography variant="h2">Seus projetos</Typography>
           <Typography color="text.secondary">
             Entre com o Google pela calculadora para acessar seu histórico.
           </Typography>
-          <Link href="/calculadora">
-            <Button variant="contained">Voltar para a calculadora</Button>
-          </Link>
+          <Button href="/calculadora" variant="contained" fullWidth>
+            Voltar para a calculadora
+          </Button>
         </Stack>
       </Container>
     );
@@ -63,7 +62,7 @@ export default async function HistoryPage() {
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Stack spacing={3}>
-        <Typography variant="h2">Seus cálculos</Typography>
+        <Typography variant="h2">Seus projetos</Typography>
 
         {error && (
           <Typography color="error">
@@ -106,17 +105,21 @@ export default async function HistoryPage() {
                 <Typography sx={{ fontWeight: 700 }}>
                   Preço definido: {formatMoney(calculation.adjusted_total)}
                 </Typography>
-                <Link href={`/history/${calculation.id}`}>
-                  <Button size="small">Ver projeto</Button>
-                </Link>
+                <Button
+                  href={`/history/${calculation.id}`}
+                  variant="outlined"
+                  fullWidth
+                >
+                  Ver projeto
+                </Button>
               </Stack>
             </CardContent>
           </Card>
         ))}
 
-        <Link href="/calculadora">
-          <Button>Novo cálculo</Button>
-        </Link>
+        <Button href="/calculadora" fullWidth>
+          Novo cálculo
+        </Button>
       </Stack>
     </Container>
   );

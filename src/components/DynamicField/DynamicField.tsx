@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid, MenuItem, TextField, Typography } from "@mui/material";
+import { Grid, MenuItem, TextField } from "@mui/material";
 
 import {
   Controller,
@@ -25,12 +25,18 @@ export function DynamicField<T extends FieldValues>({
   influenceText,
 }: DynamicFieldProps<T>) {
   return (
-    <Grid container spacing={2}>
-      <Grid size={10}>
+    <Grid container spacing={1}>
+      <Grid size={12}>
         <Controller
           name={field.id as Path<T>}
           control={control}
           render={({ field: controllerField, fieldState }) => {
+            const helperText = fieldState.error?.message ?? (
+              influenceText
+                ? `Fator no preço: ${influenceText}×`
+                : field.calculationHint
+            );
+
             if (field.type === "fee-list") {
               return (
                 <FeeField
@@ -54,7 +60,7 @@ export function DynamicField<T extends FieldValues>({
                   onChange={controllerField.onChange}
                   onBlur={controllerField.onBlur}
                   error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
+                  helperText={helperText}
                   required={field.required}
                 >
                   {field.options?.map((option) => (
@@ -85,7 +91,7 @@ export function DynamicField<T extends FieldValues>({
                 }}
                 onBlur={controllerField.onBlur}
                 error={!!fieldState.error}
-                helperText={fieldState.error?.message}
+                helperText={helperText}
                 required={field.required}
                 slotProps={{
                   inputLabel: {
@@ -130,9 +136,6 @@ export function DynamicField<T extends FieldValues>({
             );
           }}
         />
-      </Grid>
-      <Grid size={2}>
-        <Typography variant="h4" component="span">{influenceText}</Typography>
       </Grid>
     </Grid>
   );

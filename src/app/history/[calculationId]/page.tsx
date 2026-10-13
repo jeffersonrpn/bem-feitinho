@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Button,
@@ -69,9 +68,9 @@ export default async function ProjectDetailPage({
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Stack spacing={3}>
-        <Link href="/history">
-          <Button>Voltar ao histórico</Button>
-        </Link>
+        <Button href="/history" variant="outlined" fullWidth>
+          Voltar ao histórico
+        </Button>
 
         <div>
           <Typography variant="h2">{calculation.project_name}</Typography>
@@ -116,9 +115,12 @@ function DetailRow({
   emphasized?: boolean;
 }) {
   return (
-    <Stack direction="row">
+    <Stack className="result-row" direction="row">
       <Typography>{label}</Typography>
-      <Typography sx={{ fontWeight: emphasized ? 700 : undefined }}>
+      <Typography
+        className="result-row-value"
+        sx={{ fontWeight: emphasized ? 700 : undefined }}
+      >
         {formatMoney(value)}
       </Typography>
     </Stack>

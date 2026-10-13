@@ -117,11 +117,155 @@ a {
   padding: 1.2rem 1.35rem;
 }
 
-.calculator-dock {
-  padding: 0.3rem;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+.MuiButton-root {
+  min-height: 48px;
+}
+
+.MuiIconButton-root {
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.calculator-flow {
+  padding-bottom: 1rem;
+}
+
+.calculator-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding-top: 0.5rem;
+}
+
+.calculator-progress .MuiMobileStepper-root {
+  height: 22px;
+  padding: 0;
+}
+
+.calculator-flow-content {
+  min-height: calc(100svh - 150px);
+  padding-bottom: 1rem;
+}
+
+.calculator-form {
+  padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+}
+
+.calculator-form-heading {
+  padding: 1.15rem 1.2rem;
+  border: 2px solid var(--color-line);
+  border-radius: 24px;
+  background: var(--color-paper);
+  box-shadow: 0 4px 0 var(--color-line);
+}
+
+.calculator-form [class*="MuiInputBase-root"] {
+  min-height: 48px;
+}
+
+.calculator-form .MuiInputBase-input {
+  padding-block: 12px;
+}
+
+.calculator-form .MuiFormHelperText-root {
+  margin-left: 4px;
+}
+
+.calculator-form .optional-fields {
+  overflow: hidden;
+  border: 2px solid var(--color-line);
+  border-radius: 20px;
+  background: var(--color-paper);
+  box-shadow: 0 4px 0 var(--color-line);
+}
+
+.calculator-form .optional-fields::before {
+  display: none;
+}
+
+.calculator-form .optional-fields .MuiAccordionSummary-root {
+  min-height: 68px;
+  padding-inline: 16px;
+}
+
+.calculator-form .optional-fields .MuiAccordionDetails-root {
+  padding: 8px 16px 20px;
+}
+
+.calculator-form-footer,
+.calculator-result-dock {
+  position: fixed;
+  z-index: 1200;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: min(100%, 640px);
+  margin-inline: auto;
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border: 2px solid var(--color-line);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--color-paper);
+  box-shadow: 0 -4px 0 var(--color-line);
+}
+
+.form-footer-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 24px;
+}
+
+.form-footer-actions {
+  display: grid;
+  grid-template-columns: minmax(104px, 0.8fr) minmax(0, 1.4fr);
+  gap: 0.6rem;
+}
+
+.form-footer-actions .MuiButton-root,
+.calculator-result-dock .MuiButton-root {
+  min-height: 52px;
+  white-space: nowrap;
+}
+
+.calculator-result-dock {
+  padding-top: 12px;
+}
+
+.calculator-flow:has(.calculator-result-dock) .calculator-flow-content {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+.result-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.35rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.result-row-emphasized {
+  font-weight: 800;
+}
+
+.result-row-value {
+  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.project-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0.5rem;
+  padding: 16px 24px 20px;
+}
+
+.project-dialog-actions .MuiButton-root {
+  min-height: 48px;
 }
 
 @media (min-width: 700px) {
@@ -138,6 +282,22 @@ a {
 
   .calculator-options > div:first-child {
     grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 380px) {
+  .form-footer-actions {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  .form-footer-actions .MuiButton-root {
+    padding-inline: 8px;
+    font-size: 0.875rem;
+  }
+
+  .result-row-value {
+    font-size: 0.8125rem;
   }
 }
 

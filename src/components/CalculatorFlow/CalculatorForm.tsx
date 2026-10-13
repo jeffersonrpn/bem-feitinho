@@ -1,55 +1,39 @@
 "use client";
 
 import {
-  forwardRef,
-  useImperativeHandle,
-} from "react";
-
-import {
-  Alert,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
   Stack,
   Typography,
-  Snackbar,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
-
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
+import UndoRoundedIcon from "@mui/icons-material/UndoRounded";
 import {
   useForm,
   useWatch,
+  type Control,
   type FieldValues,
 } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
-
-import {
-  createCalculatorSchema,
-} from "@/domain/calculators/schema";
-
+import { createCalculatorSchema } from "@/domain/calculators/schema";
 import type {
   CalculatorConfig,
   CalculatorField,
   PricingResult,
 } from "@/domain/calculators/types";
-import {
-  calculatorEngines,
-} from "@/domain/calculators/engines";
+import { calculatorEngines } from "@/domain/calculators/engines";
 
-import {
-  DynamicField,
-} from "../DynamicField/DynamicField";
+import { DynamicField } from "../DynamicField/DynamicField";
 
 type CalculatorFormProps = {
   calculator: CalculatorConfig;
-  onSubmit: (
-    values: FieldValues,
-  ) => void | Promise<void>;
+  onSubmit: (values: FieldValues) => void | Promise<void>;
   onBack: () => void;
-};
-
-type CalculatorFormHandle = {
-  submit: () => void;
 };
 
 function formatMoney(cents: number) {
@@ -58,17 +42,6 @@ function formatMoney(cents: number) {
     currency: "BRL",
   }).format(cents / 100);
 }
-
-const StyledSnackbar = styled(Snackbar)(({ theme }) => ({
-  top: theme.spacing(11),
-  left: "auto",
-  width: "50vw",
-  "& .MuiSnackbarContent-root": {
-    justifyContent: "end",
-    backgroundColor: theme.palette.primary.dark,
-    fontSize: theme.typography.body1.fontSize,
-  },
-}));
 
 function getCalculatorResult(
   calculatorId: string,
@@ -106,7 +79,7 @@ function getMultiplierHint(
 
     return multiplier === undefined
       ? undefined
-      : `${formatMultiplier(multiplier)}`;
+      : formatMultiplier(multiplier);
   }
 
   if (
@@ -114,108 +87,140 @@ function getMultiplierHint(
     typeof value === "number"
   ) {
     const { base, step, referenceValue } = field.multiplier;
-    const multiplier = base + (value - referenceValue) * step;
-
-    return `${formatMultiplier(multiplier)}`;
+    return formatMultiplier(base + (value - referenceValue) * step);
   }
 
   if (field.multiplier?.type === "margin" && result?.subtotal) {
-    return `${formatMultiplier(result.total / result.subtotal)}`;
+    return formatMultiplier(result.total / result.subtotal);
   }
 
   return field.calculationHint;
 }
 
-export const CalculatorForm = forwardRef<
-  CalculatorFormHandle,
-  CalculatorFormProps
->(
-  function CalculatorFormComponent({
-    calculator,
-    onSubmit,
-  }, ref) {
-    const schema =
-      createCalculatorSchema(
-        calculator.fields,
-      );
+function renderFields(
+  fields: CalculatorField[],
+  control: Control<FieldValues>,
+  values: FieldValues,
+  preview: PricingResult | undefined,
+) {
+  return fields.map((field) => (
+    <DynamicField
+      key={field.id}
+      field={field}
+      control={control}
+      influenceText={getMultiplierHint(
+        field,
+        values[field.id],
+        preview,
+      )}
+    />
+  ));
+}
 
-    const {
-      control,
-      handleSubmit,
-      formState: {
-        isValid,
-      },
-    } = useForm({
-      resolver: zodResolver(schema),
-      mode: "onChange",
-    });
-    const values = useWatch({ control });
-
-    const preview =
-      getCalculatorResult(calculator.id, values);
-
-    useImperativeHandle(ref, () => ({
-      submit: () => handleSubmit(onSubmit)(),
-    }));
+export function CalculatorForm({
+  calculator,
+  onSubmit,
+  onBack,
+}: CalculatorFormProps) {
+  const schema = createCalculatorSchema(calculator.fields);
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+  });
+  const watchedValues = useWatch({ control });
+  const values = (watchedValues ?? {}) as FieldValues;
+  const requiredFields = calculator.fields.filter((field) => field.required);
+  const optionalFields = calculator.fields.filter((field) => !field.required);
+  const preview = isValid
+    ? getCalculatorResult(calculator.id, values)
+    : undefined;
 
   return (
     <Stack
       component="form"
-      spacing={3}
+      className="calculator-form"
+      spacing={2.5}
       onSubmit={handleSubmit(onSubmit)}
-      sx={{ pb: 10 }}
     >
-      <div>
-        <Typography variant="h2">
+      <Box className="calculator-form-heading">
+        <Typography variant="h2" component="h1">
           {calculator.name}
         </Typography>
-
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ mt: 1 }}
-        >
-          Preencha o que fizer sentido
-          para o seu trabalho.
+        <Typography variant="body1" color="text.secondary" sx={{ mt: 0.75 }}>
+          Preencha o essencial. Os outros detalhes são opcionais.
         </Typography>
-      </div>
+      </Box>
 
-      <Stack spacing={2}>
-        {calculator.fields.map(
-          (field) => (
-            <DynamicField
-              key={field.id}
-              field={field}
-              control={control}
-              influenceText={getMultiplierHint(
-                field,
-                values[field.id],
-                preview,
-              )}
-            />
-          ),
-        )}
-      </Stack>
+      <Box component="section" aria-labelledby="essential-fields-title">
+        <Typography
+          id="essential-fields-title"
+          variant="h5"
+          component="h2"
+          sx={{ mb: 1.5 }}
+        >
+          Para calcular
+        </Typography>
+        <Stack spacing={2}>
+          {renderFields(requiredFields, control, values, preview)}
+        </Stack>
+      </Box>
 
-      <Alert
-        severity={isValid ? "success" : "info"}
-        variant="outlined"
-        aria-live="polite"
-      >
-        {isValid
-          ? "Formulário válido. Você já pode calcular o preço."
-          : "Preencha os campos obrigatórios para calcular o preço."}
-      </Alert>
+      {optionalFields.length > 0 && (
+        <Accordion className="optional-fields">
+          <AccordionSummary
+            expandIcon={<ExpandMoreRoundedIcon />}
+            aria-controls="optional-fields-content"
+            id="optional-fields-header"
+          >
+            <Box>
+              <Typography variant="h6">Ajustar o preço</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {optionalFields.length} detalhes opcionais
+              </Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails id="optional-fields-content">
+            <Stack spacing={2.5}>
+              {renderFields(optionalFields, control, values, preview)}
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      )}
 
-      <StyledSnackbar
-        open={true}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        message={preview
-          ? `${formatMoney(preview.total)}`
-          : "--"}
-      />
-
+      <Box component="footer" className="calculator-form-footer">
+        <Box className="form-footer-summary" aria-live="polite">
+          <Typography variant="caption" color="text.secondary">
+            {isValid ? "Estimativa atual" : "Falta preencher"}
+          </Typography>
+          <Typography variant="body2" fontWeight={800}>
+            {isValid && preview
+              ? formatMoney(preview.total)
+              : `${requiredFields.length} campos essenciais`}
+          </Typography>
+        </Box>
+        <Box className="form-footer-actions">
+          <Button
+            type="button"
+            variant="outlined"
+            startIcon={<UndoRoundedIcon />}
+            onClick={onBack}
+          >
+            Voltar
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            endIcon={<TaskAltRoundedIcon />}
+            disabled={!isValid}
+          >
+            Calcular preço
+          </Button>
+        </Box>
+      </Box>
     </Stack>
   );
-  },
-);
+}

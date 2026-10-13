@@ -108,6 +108,7 @@ export function CalculatorResult({
         </Typography>
 
         <TextField
+          className="touch-field"
           label="Ajustar preço sugerido"
           type="number"
           value={editedTotal}
@@ -119,12 +120,13 @@ export function CalculatorResult({
           slotProps={{
             htmlInput: { min: 0, step: 0.01 },
           }}
-          helperText="O valor inicial considera a complexidade informada."
+          helperText="Ajuste o valor sugerido se necessário."
           fullWidth
           sx={{ mt: 2 }}
         />
 
         <Button
+          fullWidth
           variant="contained"
           onClick={() => setIsProjectDialogOpen(true)}
           disabled={saveStatus === "saving" || saveStatus === "saved"}
@@ -141,7 +143,8 @@ export function CalculatorResult({
           <Button
             component={Link}
             href="/history"
-            sx={{ mt: 2, ml: 1 }}
+            fullWidth
+            sx={{ mt: 1 }}
           >
             Ver histórico
           </Button>
@@ -182,7 +185,7 @@ export function CalculatorResult({
                 slotProps={{ htmlInput: { maxLength: 120 } }}
               />
             </DialogContent>
-            <DialogActions>
+            <DialogActions className="project-dialog-actions">
               <Button
                 type="button"
                 onClick={() => setIsProjectDialogOpen(false)}
@@ -282,7 +285,7 @@ export function CalculatorResult({
             />
 
             <ResultRow
-              label="Margem de lucro"
+              label="Lucro estimado"
               value={breakdown.profit}
             />
 
@@ -314,32 +317,22 @@ function ResultRow({
   emphasized = false,
 }: ResultRowProps) {
   return (
-    <Stack
-      spacing={2}
-    >
+    <Box className={`result-row${emphasized ? " result-row-emphasized" : ""}`}>
       <Typography
-        variant={
-          emphasized
-            ? "body1"
-            : "body2"
-        }
+        component="span"
+        variant={emphasized ? "body1" : "body2"}
       >
         {label}
       </Typography>
 
       <Typography
-        variant={
-          emphasized
-            ? "body1"
-            : "body2"
-        }
-        sx={{
-          whiteSpace: "nowrap",
-        }}
+        component="span"
+        variant={emphasized ? "body1" : "body2"}
+        className="result-row-value"
       >
         {prefix}
         {formatMoney(value)}
       </Typography>
-    </Stack>
+    </Box>
   );
 }

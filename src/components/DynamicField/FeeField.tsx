@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import {
+  Box,
   Stack,
   FormControl,
   InputLabel,
@@ -30,13 +31,18 @@ export function FeeField({
   error,
 }: FeeFieldProps) {
   const [type, setType] = useState<"fixed" | "percentage">("percentage");
-
   const [feeValue, setFeeValue] = useState("");
+  const typeLabelId = useId();
+  const parsedFee = Number(feeValue);
+  const feeIsValid = feeValue.trim() !== "" &&
+    Number.isFinite(parsedFee) &&
+    parsedFee >= 0 &&
+    (type === "fixed" || parsedFee <= 100);
 
   function addFee() {
     const numericValue = Number(feeValue);
 
-    if (feeValue.trim() === "" || !Number.isFinite(numericValue)) {
+    if (!feeIsValid) {
       return;
     }
 
@@ -59,45 +65,57 @@ export function FeeField({
 
   return (
     <Stack spacing={2}>
-      <InputLabel>{label}</InputLabel>
-      <Typography variant="body2" color="textSecondary">
-        Taxas da maquininha, bancos, etc
-      </Typography>
+      <Box>
+        <Typography variant="h6" component="h3">
+          {label}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+          Inclua tarifas de cartão ou outras cobranças.
+        </Typography>
+      </Box>
 
       <FormControl fullWidth>
-        <InputLabel>Tipo de taxa</InputLabel>
-
+        <InputLabel id={typeLabelId}>Tipo de taxa</InputLabel>
         <Select
+          labelId={typeLabelId}
           value={type}
           label="Tipo de taxa"
-          size="small"
           onChange={(event) =>
             setType(event.target.value as "fixed" | "percentage")
           }
         >
           <MenuItem value="percentage">Percentual</MenuItem>
-
           <MenuItem value="fixed">Valor fixo</MenuItem>
         </Select>
       </FormControl>
 
       <TextField
         fullWidth
-        size="small"
         type="number"
-        label={type === "percentage" ? "Percentual" : "Valor"}
+        label={type === "percentage" ? "Percentual da taxa" : "Valor da taxa"}
         value={feeValue}
         onChange={(event) => setFeeValue(event.target.value)}
         error={Boolean(error)}
-        helperText={error}
+        helperText={error ?? (type === "percentage" ? "De 0 a 100%." : "Valor em reais.")}
         slotProps={{
+          htmlInput: {
+            min: 0,
+            max: type === "percentage" ? 100 : undefined,
+            step: type === "percentage" ? 0.1 : 0.01,
+            inputMode: "decimal",
+          },
           input: {
             endAdornment: type === "percentage" ? "%" : "R$",
           },
         }}
       />
 
-      <Button type="button" variant="outlined" onClick={addFee}>
+      <Button
+        type="button"
+        variant="outlined"
+        onClick={addFee}
+        disabled={!feeIsValid}
+      >
         Adicionar taxa
       </Button>
 

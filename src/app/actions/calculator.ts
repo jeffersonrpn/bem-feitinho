@@ -42,7 +42,7 @@ export async function calculatePrice(
 
   if (!parsed.success) {
     throw new Error(
-      "Dados invalidos.",
+      "Dados inválidos.",
     );
   }
 
@@ -54,7 +54,7 @@ export async function calculatePrice(
 
   if (!engine) {
     throw new Error(
-      "Engine da calculadora não encontrada.",
+      "Mecanismo de cálculo não encontrado.",
     );
   }
 
@@ -80,7 +80,7 @@ export async function saveCalculation(
     : "";
 
   if (!normalizedProjectName || normalizedProjectName.length > 120) {
-    throw new Error("Invalid project name.");
+    throw new Error("Informe um nome de projeto válido.");
   }
 
   const supabase = await createSupabaseServerClient();

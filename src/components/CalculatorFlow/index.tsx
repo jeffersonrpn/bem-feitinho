@@ -27,6 +27,10 @@ import {
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
+  getCalculatorIdFromRouteSegment,
+  getCalculatorRouteSegment,
+} from "@/domain/calculators/routes";
+import {
   PENDING_CALCULATION_KEY,
   type PendingCalculation,
 } from "@/lib/pending-calculation";
@@ -118,10 +122,14 @@ export function CalculatorFlow({
   const pathname = usePathname();
   const router = useRouter();
   const routeParts = pathname.split("/").filter(Boolean);
-  const routeCalculatorId =
-    routeParts[0] === "calculadora"
-      ? routeParts[1]
-      : undefined;
+  const routeCalculatorSegment =
+    routeParts[0] === "calculadora" ? routeParts[1] : undefined;
+  const routeCalculatorId = routeCalculatorSegment
+    ? getCalculatorIdFromRouteSegment(
+        routeCalculatorSegment,
+        calculators.map((calculator) => calculator.id),
+      )
+    : undefined;
   const activeStep = pathname.endsWith("/resultado")
     ? 2
     : routeCalculatorId
@@ -147,19 +155,23 @@ export function CalculatorFlow({
     : restoredFlow?.adjustedTotal;
 
   useEffect(() => {
-    if (!routeCalculatorId) {
+    if (!routeCalculatorSegment) {
       return;
     }
 
-    const calculator = calculators.find(
-      (item) => item.id === routeCalculatorId,
-    );
-
-    if (!calculator) {
+    if (!routeCalculatorId) {
       router.replace("/calculadora");
       return;
     }
-  }, [calculators, routeCalculatorId, router]);
+
+    const canonicalSegment = getCalculatorRouteSegment(routeCalculatorId);
+    if (routeCalculatorSegment !== canonicalSegment) {
+      const resultSuffix = pathname.endsWith("/resultado")
+        ? "/resultado"
+        : "";
+      router.replace(`/calculadora/${canonicalSegment}${resultSuffix}`);
+    }
+  }, [calculators, pathname, routeCalculatorId, routeCalculatorSegment, router]);
 
   useEffect(() => {
     if (storedFlowValue && !parseStoredCalculatorFlow(storedFlowValue)) {
@@ -202,7 +214,9 @@ export function CalculatorFlow({
         setFormValues(pending.values);
         setResult(calculated);
         setAdjustedTotal(pending.adjustedTotal);
-        router.replace(`/calculadora/${pending.calculatorId}/resultado`);
+        router.replace(
+          `/calculadora/${getCalculatorRouteSegment(pending.calculatorId)}/resultado`,
+        );
 
         await saveCalculation(
           pending.calculatorId,
@@ -224,7 +238,7 @@ export function CalculatorFlow({
   function handleCalculatorSelect(
     calculator: CalculatorConfig,
   ) {
-    router.push(`/calculadora/${calculator.id}`);
+    router.push(`/calculadora/${getCalculatorRouteSegment(calculator.id)}`);
   }
 
   async function handleFormSubmit(
@@ -251,7 +265,9 @@ export function CalculatorFlow({
         result: calculated,
       }),
     );
-    router.push(`/calculadora/${selectedCalculator.id}/resultado`);
+    router.push(
+      `/calculadora/${getCalculatorRouteSegment(selectedCalculator.id)}/resultado`,
+    );
   }
 
   function handleRestart() {

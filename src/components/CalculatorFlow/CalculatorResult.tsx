@@ -142,7 +142,7 @@ export function CalculatorResult({
         {saveStatus === "saved" && (
           <Button
             component={Link}
-            href="/history"
+            href="/historico"
             fullWidth
             sx={{ mt: 1 }}
           >

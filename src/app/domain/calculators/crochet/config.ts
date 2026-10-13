@@ -82,7 +82,7 @@ export const crochetCalculator: CalculatorConfig = {
         {
           id: "conducted",
           multiplier: 1.25,
-          label: "Fio Conduzido",
+          label: "Fio conduzido",
         },
       ],
     },

@@ -24,7 +24,7 @@ export function CalculatorSelector({
   onSelect,
 }: CalculatorSelectorProps) {
   return (
-    <Stack spacing={2}>
+    <Stack className="calculator-options" spacing={2}>
       <div>
         <Typography component="h3" variant="h3">
           O que você vai fazer?

@@ -84,7 +84,7 @@ export function AppHeader({
                 </MenuItem>
                 <MenuItem
                   component={Link}
-                  href="/history"
+                  href="/historico"
                   onClick={() => setAnchorEl(null)}
                 >
                   Histórico de projetos

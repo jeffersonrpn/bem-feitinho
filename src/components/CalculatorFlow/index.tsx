@@ -2,21 +2,19 @@
 
 import {
   useEffect,
-  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BottomNavigation,
-  BottomNavigationAction,
   Box,
+  Button,
   Container,
   MobileStepper,
   Paper,
+  Typography,
 } from "@mui/material";
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
-import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 
 import type {
   CalculatorConfig,
@@ -28,6 +26,10 @@ import {
 } from "@/app/actions/calculator";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  getCalculatorIdFromRouteSegment,
+  getCalculatorRouteSegment,
+} from "@/domain/calculators/routes";
 import {
   PENDING_CALCULATION_KEY,
   type PendingCalculation,
@@ -117,14 +119,17 @@ export function CalculatorFlow({
   const [saveError, setSaveError] =
     useState<string>();
 
-  const formRef = useRef<{ submit: () => void }>(null);
   const pathname = usePathname();
   const router = useRouter();
   const routeParts = pathname.split("/").filter(Boolean);
-  const routeCalculatorId =
-    routeParts[0] === "calculadora"
-      ? routeParts[1]
-      : undefined;
+  const routeCalculatorSegment =
+    routeParts[0] === "calculadora" ? routeParts[1] : undefined;
+  const routeCalculatorId = routeCalculatorSegment
+    ? getCalculatorIdFromRouteSegment(
+        routeCalculatorSegment,
+        calculators.map((calculator) => calculator.id),
+      )
+    : undefined;
   const activeStep = pathname.endsWith("/resultado")
     ? 2
     : routeCalculatorId
@@ -150,19 +155,23 @@ export function CalculatorFlow({
     : restoredFlow?.adjustedTotal;
 
   useEffect(() => {
-    if (!routeCalculatorId) {
+    if (!routeCalculatorSegment) {
       return;
     }
 
-    const calculator = calculators.find(
-      (item) => item.id === routeCalculatorId,
-    );
-
-    if (!calculator) {
+    if (!routeCalculatorId) {
       router.replace("/calculadora");
       return;
     }
-  }, [calculators, routeCalculatorId, router]);
+
+    const canonicalSegment = getCalculatorRouteSegment(routeCalculatorId);
+    if (routeCalculatorSegment !== canonicalSegment) {
+      const resultSuffix = pathname.endsWith("/resultado")
+        ? "/resultado"
+        : "";
+      router.replace(`/calculadora/${canonicalSegment}${resultSuffix}`);
+    }
+  }, [calculators, pathname, routeCalculatorId, routeCalculatorSegment, router]);
 
   useEffect(() => {
     if (storedFlowValue && !parseStoredCalculatorFlow(storedFlowValue)) {
@@ -205,7 +214,9 @@ export function CalculatorFlow({
         setFormValues(pending.values);
         setResult(calculated);
         setAdjustedTotal(pending.adjustedTotal);
-        router.replace(`/calculadora/${pending.calculatorId}/resultado`);
+        router.replace(
+          `/calculadora/${getCalculatorRouteSegment(pending.calculatorId)}/resultado`,
+        );
 
         await saveCalculation(
           pending.calculatorId,
@@ -227,7 +238,7 @@ export function CalculatorFlow({
   function handleCalculatorSelect(
     calculator: CalculatorConfig,
   ) {
-    router.push(`/calculadora/${calculator.id}`);
+    router.push(`/calculadora/${getCalculatorRouteSegment(calculator.id)}`);
   }
 
   async function handleFormSubmit(
@@ -254,7 +265,9 @@ export function CalculatorFlow({
         result: calculated,
       }),
     );
-    router.push(`/calculadora/${selectedCalculator.id}/resultado`);
+    router.push(
+      `/calculadora/${getCalculatorRouteSegment(selectedCalculator.id)}/resultado`,
+    );
   }
 
   function handleRestart() {
@@ -347,22 +360,31 @@ export function CalculatorFlow({
   }
 
   return (
-    <Container>
-      <MobileStepper
-        variant="dots"
-        steps={3}
-        position="static"
-        activeStep={activeStep}
-        sx={{ justifyContent: "center" }}
-        slotProps={{
-          progress: {
-            'aria-label': 'stepper dotted progress',
-          },
-        }}
-        nextButton={<></>}
-        backButton={<></>}
-      />
-      <Box sx={{ minHeight: '78vh', marginBottom: '6rem' }}>
+    <Container className="calculator-flow">
+      <Box className="calculator-progress">
+        <Typography variant="caption" color="text.secondary" aria-live="polite">
+          {activeStep + 1} de 3 · {[
+            "Escolha a calculadora",
+            "Informe os detalhes",
+            "Revise o resultado",
+          ][activeStep]}
+        </Typography>
+        <MobileStepper
+          variant="dots"
+          steps={3}
+          position="static"
+          activeStep={activeStep}
+          sx={{ justifyContent: "center" }}
+          slotProps={{
+            progress: {
+              'aria-label': `Etapa ${activeStep + 1} de 3`,
+            },
+          }}
+          nextButton={<></>}
+          backButton={<></>}
+        />
+      </Box>
+      <Box className="calculator-flow-content">
         {activeStep === 0 && (
           <CalculatorSelector
             calculators={calculators}
@@ -375,7 +397,6 @@ export function CalculatorFlow({
         {activeStep === 1 &&
           selectedCalculator && (
             <CalculatorForm
-              ref={formRef}
               calculator={
                 selectedCalculator
               }
@@ -399,24 +420,16 @@ export function CalculatorFlow({
           />
         )}
       </Box>
-      {activeStep > 0 && (
-        <Paper sx={{
-          position: 'fixed', bottom: 0, left: 0, right: 0,
-          zIndex: 1000,
-          borderRadius: `2rem`,
-          margin: 2
-        }} elevation={3}>
-          {activeStep === 1 && (
-            <BottomNavigation showLabels={false} sx={{ borderRadius: `2rem` }}>
-              <BottomNavigationAction label="Voltar" icon={<UndoRoundedIcon />} onClick={handleBack} />
-              <BottomNavigationAction label="Calcular" icon={<TaskAltRoundedIcon />} onClick={() => formRef.current?.submit()} />
-            </BottomNavigation>
-          )}
-          {activeStep === 2 && (
-            <BottomNavigation showLabels={false} sx={{ borderRadius: `2rem` }}>
-              <BottomNavigationAction label="Voltar" icon={<UndoRoundedIcon />} onClick={handleRestart} />
-            </BottomNavigation>
-          )}
+      {activeStep === 2 && (
+        <Paper component="footer" className="calculator-result-dock" elevation={1}>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<UndoRoundedIcon />}
+            onClick={handleRestart}
+          >
+            Nova estimativa
+          </Button>
         </Paper>
       )}
     </Container>

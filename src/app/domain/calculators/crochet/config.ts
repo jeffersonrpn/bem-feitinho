@@ -10,7 +10,7 @@ export const crochetCalculator: CalculatorConfig = {
   fields: [
     {
       id: "sizeCm",
-      label: "Tamanho",
+      label: "Tamanho do projeto (cm)",
       type: "number",
       required: false,
       min: 0,
@@ -25,7 +25,7 @@ export const crochetCalculator: CalculatorConfig = {
 
     {
       id: "complexity",
-      label: "Complexidade do trabalho (1 a 10)",
+      label: "Complexidade do projeto (1 a 10)",
       type: "number",
       required: true,
       min: 1,
@@ -82,7 +82,7 @@ export const crochetCalculator: CalculatorConfig = {
         {
           id: "conducted",
           multiplier: 1.25,
-          label: "Fio Conduzido",
+          label: "Fio conduzido",
         },
       ],
     },
@@ -98,11 +98,11 @@ export const crochetCalculator: CalculatorConfig = {
 
     {
       id: "totalTime",
-      label: "Tempo total em horas",
+      label: "Tempo total de trabalho (horas)",
       type: "number",
-      required: false,
-      min: 0,
-      step: 1,
+      required: true,
+      min: 0.5,
+      step: 0.5,
       multiplier: {
         type: "linear",
         base: 1,

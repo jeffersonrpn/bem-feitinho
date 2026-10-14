@@ -10,7 +10,7 @@ export const tattooCalculator: CalculatorConfig = {
   fields: [
     {
       id: "sizeCm",
-      label: "Tamanho",
+      label: "Tamanho da tatuagem (cm)",
       type: "number",
       required: false,
       min: 0,
@@ -25,7 +25,7 @@ export const tattooCalculator: CalculatorConfig = {
 
     {
       id: "complexity",
-      label: "Complexidade do trabalho (1 a 10)",
+      label: "Complexidade do desenho (1 a 10)",
       type: "number",
       required: true,
       min: 1,
@@ -167,10 +167,10 @@ export const tattooCalculator: CalculatorConfig = {
 
     {
       id: "sessions",
-      label: "Número de sessões",
+      label: "Quantidade de sessões",
       type: "number",
-      required: false,
-      min: 0,
+      required: true,
+      min: 1,
       step: 1,
     },
 
@@ -178,8 +178,8 @@ export const tattooCalculator: CalculatorConfig = {
       id: "hoursPerSession",
       label: "Horas por sessão",
       type: "number",
-      required: false,
-      min: 0,
+      required: true,
+      min: 0.5,
       step: 0.5,
     },
 

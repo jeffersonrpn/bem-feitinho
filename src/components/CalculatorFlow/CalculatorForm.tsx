@@ -196,7 +196,7 @@ export function CalculatorForm({
           <Typography variant="caption" color="text.secondary">
             {isValid ? "Estimativa atual" : "Falta preencher"}
           </Typography>
-          <Typography variant="body2" fontWeight={800}>
+          <Typography variant="body2" sx={{ fontWeight: 800 }}>
             {isValid && preview
               ? formatMoney(preview.total)
               : `${requiredFields.length} campos essenciais`}

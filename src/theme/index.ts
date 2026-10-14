@@ -129,13 +129,15 @@ export const createAppTheme = () =>
             borderRadius: 16,
             fontWeight: 700,
           },
-          standardSuccess: {
-            backgroundColor: "#E6F1DC",
-            color: "#397644",
-          },
-          standardInfo: {
-            backgroundColor: "#EEE9F8",
-            color: "#665395",
+          standard: {
+            "&.MuiAlert-colorSuccess": {
+              backgroundColor: "#E6F1DC",
+              color: "#397644",
+            },
+            "&.MuiAlert-colorInfo": {
+              backgroundColor: "#EEE9F8",
+              color: "#665395",
+            },
           },
         },
       },

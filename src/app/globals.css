@@ -210,6 +210,55 @@ a {
   box-shadow: 0 -4px 0 var(--color-line);
 }
 
+.history-page {
+  padding-top: 1.25rem;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+}
+
+.history-card .MuiCardContent-root {
+  padding: 14px 16px;
+}
+
+.history-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.history-card-footer .MuiButton-root {
+  min-width: 110px;
+}
+
+.history-action-dock {
+  position: fixed;
+  z-index: 1200;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: min(100%, 600px);
+  margin-inline: auto;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border: 2px solid var(--color-line);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--color-paper);
+  box-shadow: 0 -4px 0 var(--color-line);
+}
+
+.history-action-buttons {
+  display: grid;
+  grid-template-columns: 0.8fr 1.3fr;
+  gap: 0.6rem;
+}
+
+.history-action-dock .MuiButton-root {
+  min-height: 52px;
+  white-space: nowrap;
+}
+
 .form-footer-summary {
   display: flex;
   align-items: baseline;

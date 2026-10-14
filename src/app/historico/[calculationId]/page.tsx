@@ -78,6 +78,7 @@ export default async function ProjectDetailPage({
             {calculatorName} · {new Intl.DateTimeFormat("pt-BR", {
               dateStyle: "medium",
               timeStyle: "short",
+              timeZone: "UTC",
             }).format(new Date(calculation.created_at))}
           </Typography>
         </div>

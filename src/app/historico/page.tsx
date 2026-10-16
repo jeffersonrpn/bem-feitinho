@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { redirect } from "next/navigation";
 
+import { DeleteCalculationButton } from "./DeleteCalculationButton";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -172,29 +173,42 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
             <Card key={calculation.id} className="history-card">
               <CardContent>
                 <Stack spacing={1.25}>
-                  <Box>
-                    <Typography
-                      variant="h6"
-                      component="h2"
-                      sx={{ fontWeight: 800, overflowWrap: "anywhere" }}
-                    >
-                      {calculation.project_name}
-                    </Typography>
-                    <Chip
-                      icon={<WorkOutlineRoundedIcon />}
-                      label={getCalculatorName(calculation.calculator_id)}
-                      size="small"
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      gap: 1,
+                    }}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="h6"
+                        component="h2"
+                        sx={{ fontWeight: 800, overflowWrap: "anywhere" }}
+                      >
+                        {calculation.project_name}
+                      </Typography>
+                      <Chip
+                        icon={<WorkOutlineRoundedIcon />}
+                        label={getCalculatorName(calculation.calculator_id)}
+                        size="small"
+                      />
+                      <CalendarTodayRoundedIcon
+                        aria-hidden="true"
+                        sx={{ fontSize: 15, color: "text.secondary" }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {new Intl.DateTimeFormat("pt-BR", {
+                          dateStyle: "medium",
+                          timeZone: "UTC",
+                        }).format(new Date(calculation.created_at))}
+                      </Typography>
+                    </Box>
+                    <DeleteCalculationButton
+                      calculationId={calculation.id}
+                      projectName={calculation.project_name}
                     />
-                    <CalendarTodayRoundedIcon
-                      aria-hidden="true"
-                      sx={{ fontSize: 15, color: "text.secondary" }}
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      {new Intl.DateTimeFormat("pt-BR", {
-                        dateStyle: "medium",
-                        timeZone: "UTC",
-                      }).format(new Date(calculation.created_at))}
-                    </Typography>
                   </Box>
 
                   <Box className="history-card-footer">

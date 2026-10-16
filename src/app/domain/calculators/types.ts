@@ -51,6 +51,53 @@ export type CalculatorField = {
 
 export type PricingInput = Record<string, unknown>;
 
+export type ContextSimilarityField = {
+  id: string;
+  type: "number" | "category";
+  weight: number;
+  minimumScale?: number;
+};
+
+export type ContextScoringConfig = {
+  calculatorVersion: number;
+  currency: string;
+  fields: ContextSimilarityField[];
+  minimumCoverage: number;
+  maximumDistance: number;
+  maximumPeers: number;
+  minimumPeers: number;
+  calibrationFactor: number;
+};
+
+export type HistoricalCalculation = {
+  inputSnapshot: PricingInput;
+  suggestedTotal: Money;
+  currency: string;
+  calculatorVersion: number;
+};
+
+export type ContextScore =
+  | {
+      status: "available";
+      score: number;
+      meanPrice: Money;
+      standardDeviation: number;
+      peerCount: number;
+      basePrice: Money;
+      suggestedPrice: Money;
+    }
+  | {
+      status: "unavailable";
+      reason:
+        | "no-comparable-attributes"
+        | "no-neighbors"
+        | "insufficient-peers"
+        | "zero-variance"
+        | "history-unavailable";
+      peerCount: number;
+      basePrice: Money;
+    };
+
 export type PricingAdjustment = {
   id: string;
   label: string;
@@ -86,6 +133,7 @@ export type PricingResult = {
   subtotal: Money;
   suggestedTotal: Money;
   breakdown: PricingBreakdown;
+  contextScore?: ContextScore;
 };
 
 export type PricingConfig<TInput extends PricingInput = PricingInput> = {
@@ -97,4 +145,5 @@ export type CalculatorConfig = {
   name: string;
   description: string;
   fields: CalculatorField[];
+  contextScoring: ContextScoringConfig;
 };

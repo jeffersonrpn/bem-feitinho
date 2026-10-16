@@ -1,10 +1,12 @@
 import type {
+  HistoricalCalculation,
   Fee,
   Money,
   PricingAdjustment,
   PricingFee,
   PricingResult,
 } from "../types";
+import { applyContextScore } from "../context-score";
 
 import {
   addMoney,
@@ -299,6 +301,7 @@ function calculateFees(
 
 export function calculateTattooPrice(
   input: TattooInput,
+  history?: HistoricalCalculation[],
 ): PricingResult {
   const {
     baseLabor,
@@ -376,7 +379,7 @@ export function calculateTattooPrice(
 
   const profit = Math.max(0, total - subtotal);
 
-  return {
+  const result: PricingResult = {
     total,
     subtotal,
     suggestedTotal: total,
@@ -396,4 +399,13 @@ export function calculateTattooPrice(
       adjustments,
     },
   };
+
+  return history === undefined
+    ? result
+    : applyContextScore(
+        result,
+        input,
+        history,
+        tattooCalculator.contextScoring,
+      );
 }

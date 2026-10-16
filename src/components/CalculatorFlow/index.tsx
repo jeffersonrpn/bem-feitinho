@@ -18,10 +18,12 @@ import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 
 import type {
   CalculatorConfig,
+  HistoricalCalculation,
   PricingResult,
 } from "@/domain/calculators/types";
 import {
   calculatePrice,
+  getCalculationHistory,
   saveCalculation,
 } from "@/app/actions/calculator";
 
@@ -118,6 +120,11 @@ export function CalculatorFlow({
     useState<"saving" | "saved">();
   const [saveError, setSaveError] =
     useState<string>();
+  const [historyState, setHistoryState] = useState<{
+    calculatorId: string;
+    history: HistoricalCalculation[];
+    status: "ready" | "error";
+  }>();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -138,6 +145,49 @@ export function CalculatorFlow({
   const selectedCalculator = calculators.find(
     (item) => item.id === routeCalculatorId,
   );
+  const selectedCalculatorId = selectedCalculator?.id;
+  const currentHistoryState =
+    historyState?.calculatorId === selectedCalculatorId
+      ? historyState
+      : undefined;
+  const contextHistory = currentHistoryState?.history ?? [];
+  const historyStatus = !selectedCalculatorId
+    ? "ready"
+    : currentHistoryState
+      ? currentHistoryState.status
+      : "loading";
+
+  useEffect(() => {
+    if (!selectedCalculatorId) {
+      return;
+    }
+
+    let isCurrent = true;
+
+    void getCalculationHistory(selectedCalculatorId)
+      .then((history) => {
+        if (isCurrent) {
+          setHistoryState({
+            calculatorId: selectedCalculatorId,
+            history,
+            status: "ready",
+          });
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setHistoryState({
+            calculatorId: selectedCalculatorId,
+            history: [],
+            status: "error",
+          });
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedCalculatorId]);
   const storedFlowValue = useSyncExternalStore(
     subscribeToCalculatorFlowState,
     getCalculatorFlowSnapshot,
@@ -400,6 +450,8 @@ export function CalculatorFlow({
               calculator={
                 selectedCalculator
               }
+              contextHistory={contextHistory}
+              historyStatus={historyStatus}
               onSubmit={
                 handleFormSubmit
               }

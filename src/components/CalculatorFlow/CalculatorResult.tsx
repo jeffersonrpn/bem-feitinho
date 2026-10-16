@@ -107,6 +107,33 @@ export function CalculatorResult({
           {formatMoney(displayedTotal)}
         </Typography>
 
+        {result.contextScore?.status === "available" && (
+          <Stack spacing={0.25} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Score {new Intl.NumberFormat("pt-BR", {
+                signDisplay: "always",
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              }).format(result.contextScore.score)} · {result.contextScore.score > 0
+                ? "acima"
+                : result.contextScore.score < 0
+                  ? "abaixo"
+                  : "na média"} dos projetos semelhantes
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Preço-base: {formatMoney(result.contextScore.basePrice)} · referência: {formatMoney(result.contextScore.meanPrice)} em {result.contextScore.peerCount} projetos
+            </Typography>
+          </Stack>
+        )}
+
+        {result.contextScore?.status === "unavailable" && (
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+            {result.contextScore.reason === "history-unavailable"
+              ? "Não foi possível consultar o histórico; o preço-base foi mantido."
+              : "Histórico insuficiente para calcular o score; o preço-base foi mantido."}
+          </Typography>
+        )}
+
         <TextField
           className="touch-field"
           label="Ajustar preço sugerido"

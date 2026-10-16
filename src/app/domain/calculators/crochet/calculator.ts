@@ -1,10 +1,12 @@
 import type {
+  HistoricalCalculation,
   Fee,
   Money,
   PricingAdjustment,
   PricingFee,
   PricingResult,
 } from "../types";
+import { applyContextScore } from "../context-score";
 
 import {
   addMoney,
@@ -285,6 +287,7 @@ function calculateFees(
 
 export function calculateCrochetPrice(
   input: CrochetInput,
+  history?: HistoricalCalculation[],
 ): PricingResult {
   const {
     baseLabor,
@@ -362,7 +365,7 @@ export function calculateCrochetPrice(
 
   const profit = Math.max(0, total - subtotal);
 
-  return {
+  const result: PricingResult = {
     total,
     subtotal,
     suggestedTotal: total,
@@ -382,4 +385,13 @@ export function calculateCrochetPrice(
       adjustments,
     },
   };
+
+  return history === undefined
+    ? result
+    : applyContextScore(
+        result,
+        input,
+        history,
+        crochetCalculator.contextScoring,
+      );
 }

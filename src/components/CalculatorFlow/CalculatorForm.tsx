@@ -24,6 +24,7 @@ import { createCalculatorSchema } from "@/domain/calculators/schema";
 import type {
   CalculatorConfig,
   CalculatorField,
+  HistoricalCalculation,
   PricingResult,
 } from "@/domain/calculators/types";
 import { calculatorEngines } from "@/domain/calculators/engines";
@@ -34,6 +35,8 @@ type CalculatorFormProps = {
   calculator: CalculatorConfig;
   onSubmit: (values: FieldValues) => void | Promise<void>;
   onBack: () => void;
+  contextHistory?: HistoricalCalculation[];
+  historyStatus?: "loading" | "ready" | "error";
 };
 
 function formatMoney(cents: number) {
@@ -46,15 +49,17 @@ function formatMoney(cents: number) {
 function getCalculatorResult(
   calculatorId: string,
   values: FieldValues,
+  history?: HistoricalCalculation[],
 ): PricingResult | undefined {
   try {
     const engine = calculatorEngines[
       calculatorId as keyof typeof calculatorEngines
     ] as unknown as (
       input: Record<string, unknown>,
+      history?: HistoricalCalculation[],
     ) => PricingResult;
 
-    return engine(values);
+    return engine(values, history);
   } catch {
     return undefined;
   }
@@ -121,6 +126,8 @@ export function CalculatorForm({
   calculator,
   onSubmit,
   onBack,
+  contextHistory,
+  historyStatus = "loading",
 }: CalculatorFormProps) {
   const schema = createCalculatorSchema(calculator.fields);
   const {
@@ -136,7 +143,11 @@ export function CalculatorForm({
   const requiredFields = calculator.fields.filter((field) => field.required);
   const optionalFields = calculator.fields.filter((field) => !field.required);
   const preview = isValid
-    ? getCalculatorResult(calculator.id, values)
+    ? getCalculatorResult(
+        calculator.id,
+        values,
+        historyStatus === "ready" ? contextHistory ?? [] : undefined,
+      )
     : undefined;
 
   return (
@@ -201,6 +212,39 @@ export function CalculatorForm({
               ? formatMoney(preview.total)
               : `${requiredFields.length} campos essenciais`}
           </Typography>
+          {isValid && preview && historyStatus === "loading" && (
+            <Typography variant="caption" color="text.secondary">
+              Carregando histórico para comparar.
+            </Typography>
+          )}
+          {isValid && preview && historyStatus === "error" && (
+            <Typography variant="caption" color="text.secondary">
+              Histórico indisponível; preço sem calibração.
+            </Typography>
+          )}
+          {isValid && preview?.contextScore?.status === "available" && (
+            <>
+              <Typography variant="caption" color="text.secondary">
+                Score {new Intl.NumberFormat("pt-BR", {
+                  signDisplay: "always",
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                }).format(preview.contextScore.score)} · {preview.contextScore.score > 0
+                  ? "acima"
+                  : preview.contextScore.score < 0
+                    ? "abaixo"
+                    : "na média"} da média
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Referência: {formatMoney(preview.contextScore.meanPrice)} · {preview.contextScore.peerCount} projetos
+              </Typography>
+            </>
+          )}
+          {isValid && preview?.contextScore?.status === "unavailable" && (
+            <Typography variant="caption" color="text.secondary">
+              Histórico insuficiente; preço sem calibração.
+            </Typography>
+          )}
         </Box>
         <Box className="form-footer-actions">
           <Button

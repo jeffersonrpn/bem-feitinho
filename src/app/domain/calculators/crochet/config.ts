@@ -7,6 +7,22 @@ export const crochetCalculator: CalculatorConfig = {
   name: "Crochê",
   description:
     "Calcule um preço sugerido para seu trabalho.",
+  contextScoring: {
+    calculatorVersion: 1,
+    currency: "BRL",
+    fields: [
+      { id: "sizeCm", type: "number", weight: 1, minimumScale: 0.5 },
+      { id: "complexity", type: "number", weight: 1, minimumScale: 1 },
+      { id: "design", type: "category", weight: 1 },
+      { id: "style", type: "category", weight: 1 },
+      { id: "totalTime", type: "number", weight: 1, minimumScale: 0.5 },
+    ],
+    minimumCoverage: 0.8,
+    maximumDistance: 0.45,
+    maximumPeers: 10,
+    minimumPeers: 3,
+    calibrationFactor: 0.25,
+  },
   fields: [
     {
       id: "sizeCm",

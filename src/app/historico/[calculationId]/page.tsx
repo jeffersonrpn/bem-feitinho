@@ -83,6 +83,31 @@ export default async function ProjectDetailPage({
           </Typography>
         </div>
 
+        {calculation.result_snapshot.contextScore?.status === "available" && (
+          <Stack spacing={0.25}>
+            <Typography variant="body2" color="text.secondary">
+              Score {new Intl.NumberFormat("pt-BR", {
+                signDisplay: "always",
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              }).format(calculation.result_snapshot.contextScore.score)} · {calculation.result_snapshot.contextScore.score > 0
+                ? "acima"
+                : calculation.result_snapshot.contextScore.score < 0
+                  ? "abaixo"
+                  : "na média"} dos projetos semelhantes
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Preço-base: {formatMoney(calculation.result_snapshot.contextScore.basePrice)} · referência: {formatMoney(calculation.result_snapshot.contextScore.meanPrice)} em {calculation.result_snapshot.contextScore.peerCount} projetos
+            </Typography>
+          </Stack>
+        )}
+
+        {calculation.result_snapshot.contextScore?.status === "unavailable" && (
+          <Typography variant="caption" color="text.secondary">
+            Score indisponível; o preço-base não foi calibrado pelo histórico.
+          </Typography>
+        )}
+
         <Card>
           <CardContent>
             <Stack spacing={1.5}>
